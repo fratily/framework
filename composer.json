@@ -1,0 +1,24 @@
+{
+    "name": "fratily/framework",
+    "authors": [
+        {
+            "name": "Kento Oka",
+            "email": "oka.kento0311@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "require": {
+        "php": ">=7.1",
+        "psr/http-message": "^1.0",
+        "psr/container": "^1.0",
+        "psr/log": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Fratily\\": "src/"
+        },
+        "files": [
+            "config/bootstrap.php"
+        ]
+    }
+}
