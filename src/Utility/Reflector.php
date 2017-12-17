@@ -52,15 +52,19 @@ class Reflector{
             $class  = get_class($class);
         }else if(!is_string($class)){
             throw new \InvalidArgumentException;
-        }else if(!class_exists($class)){
-            throw new \Fratily\Exception\ClassUndefinedException($class);
         }
 
-        if(!isset(self::$classes[$class])){
-            self::$classes  = new \ReflectionClass($class);
+        $key  = hash("md5", $class);
+
+        if(!isset(self::$classes[$key])){
+            if(!class_exists($class)){
+                throw new \Fratily\Exception\ClassUndefinedException($class);
+            }
+
+            self::$classes[$key]  = new \ReflectionClass($class);
         }
 
-        return self::$classes[$class];
+        return self::$classes[$key];
     }
 
     /**
@@ -77,7 +81,6 @@ class Reflector{
         $class  = self::getClass($class);
 
         if(!isset(self::$methods[$class->getName()][$method])){
-
             if(!$class->hasMethod($method)){
                 throw new \Fratily\Exception\MethodUndefinedException($class->getName(), $method);
             }
@@ -124,7 +127,6 @@ class Reflector{
         $class  = self::getClass($class);
 
         if(!isset(self::$properties[$class->getName()][$property])){
-
             if(!$class->hasProperty($property)){
                 throw new \Fratily\Exception\PropertyUndefinedException($class->getName(), $property);
             }
@@ -164,8 +166,10 @@ class Reflector{
      *
      * @return  \ReflectionFunction
      */
-    public static function getFunction(callable $function){
+    public static function getFunction($function){
         if(!is_string($function) && !($function instanceof \Closure)){
+            throw new \InvalidArgumentException;
+        }else if(is_string($function) && strpos($function, ":") !== false){
             throw new \InvalidArgumentException;
         }
 
