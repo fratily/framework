@@ -28,36 +28,36 @@ use Psr\Container\ContainerInterface;
  * @property-read   RendererInterface   $renderer
  */
 abstract class Controller{
-    
+
     /**
      * DIコンテナ
-     * 
+     *
      * @var ContainerInterface
      */
     private $container;
-    
+
     /**
      * レスポンスファクトリー
-     * 
+     *
      * @var ResponseFactoryInterface
      */
     private $responseFactory;
-    
+
     /**
      * レンダラ
-     * 
+     *
      * @var RendererInterface
      */
     private $renderer;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param   ContainerInterface  $container
      * @param   ResponseFactoryInterface    $responseFactory
      * @param   RendererInterface   $renderer
      */
-    public function __construct(        
+    public function __construct(
         ContainerInterface $container,
         ResponseFactoryInterface $responseFactory,
         RendererInterface $renderer
@@ -71,9 +71,9 @@ abstract class Controller{
      * Get property
      *
      * @param   string  $key
-     * 
+     *
      * @throws  Exception\PropertyUndefinedException
-     * 
+     *
      * @return  mixed
      */
     public function __get($key){
@@ -101,7 +101,7 @@ abstract class Controller{
      *
      * @throws  Exception\ActionImplementException
      * @throws  Exception\ActionUndefinedException
-     * 
+     *
      * @return  ResponseInterface
      */
     public function execute(
@@ -153,16 +153,16 @@ abstract class Controller{
 
         //  アクションメソッド実行
         $return = $method->invokeArgs($this, $args);
-        
+
         if($return instanceof ResponseInterface){
             return $return;
         }else if(is_scalar($return)){
             $response   = $this->response;
-            $response->getBody()->write($return);
-            
+            $response->getBody()->write((string)$return);
+
             return $response;
         }
-        
+
         throw new Exception\ActionImplementException(static::class, $action,
             "Action {class.name}::{method.name} dose not returnd ResponseInterface or scalar value."
         );
