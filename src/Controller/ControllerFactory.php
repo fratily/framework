@@ -15,53 +15,54 @@ namespace Fratily\Controller;
 
 use Fratily\Http\ResponseFactoryInterface;
 use Fratily\Renderer\RendererInterface;
+use Fratily\Utility\Reflector;
 use Psr\Container\ContainerInterface;
 
 /**
  *
  */
 class ControllerFactory{
-    
+
     const CTRL_NS   = "\\App\\Controller\\";
-    
+
     /**
      * DIコンテナ
-     * 
+     *
      * @var CotnainerInterface
      */
     private $container;
-    
+
     /**
      * レスポンスファクトリー
-     * 
+     *
      * @var ResponseFactoryInterface
      */
     private $responseFactory;
-    
+
     /**
      * レンダラ
-     * 
+     *
      * @var RendererInterface
      */
     private $renderer;
-    
+
     /**
      * エラーコントローラーのクラス名
-     * 
+     *
      * @var string
      */
     private $errClass;
-    
+
     /**
      * コントローラーのネームスペース
-     * 
+     *
      * @param   string
      */
     private $ctrlNs;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param   ContainerInterface  $container
      * @param   ResponseFactoryInterface    $responseFactory
      * @param   RendererInterface   $renderer
@@ -75,7 +76,7 @@ class ControllerFactory{
         $this->responseFactory  = $responseFactory;
         $this->renderer         = $renderer;
     }
-    
+
     /**
      * コントローラーを返す
      *
@@ -83,14 +84,14 @@ class ControllerFactory{
      *      コントローラー名
      *
      * @throws  EXception\ControllerNotFoundException
-     * 
+     *
      * @return  Controller
      */
     public function getController(string $controller){
         $class  = ($this->ctrlNs ?? self::CTRL_NS)
             . strtr(ucwords(strtr($controller, ["-" => " "])), [" " => ""])
             . "Controller";
-        
+
         if(!$this->isController($class)){
             throw new Exception\ControllerNotFoundException($class);
         }
@@ -107,7 +108,7 @@ class ControllerFactory{
         $class  = $this->errClass ?? ErrorController::class;
         return new $class($this->container, $this->responseFactory, $this->renderer);
     }
-    
+
     /**
      * コントローラークラスのネームスペースをセットする
      *
@@ -122,7 +123,7 @@ class ControllerFactory{
      *
      * @param   string  $class
      *      エラーコントローラークラス名
-     * 
+     *
      * @throws  \InvalidArgumentException
      */
     public function setErrorController(string $class){
@@ -144,13 +145,7 @@ class ControllerFactory{
      * @return  bool
      */
     protected function isController(string $class){
-        if(class_exists($class)){
-            $ref    = new \ReflectionClass($class);
-
-            return $ref->isSubclassOf(Controller::class);
-        }
-
-        return false;
+        return Reflector::getClass($class)->isSubclassOf(Controller::class);
     }
 
     /**
@@ -162,13 +157,7 @@ class ControllerFactory{
      * @return  bool
      */
     protected function isErrorController(string $class){
-        if(class_exists($class)){
-            $ref    = new \ReflectionClass($class);
-
-            return $ref->isSubclassOf(Controller::class)
-                && $ref->implementsInterface(ErrorControllerInterface::class);
-        }
-
-        return false;
+        return Reflector::getClass($class)->isSubclassOf(Controller::class)
+            && Reflector::getClass($class)->implementsInterface(ErrorControllerInterface::class);
     }
 }

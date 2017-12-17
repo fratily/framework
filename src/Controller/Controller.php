@@ -15,6 +15,7 @@ namespace Fratily\Controller;
 
 use Fratily\Http\ResponseFactoryInterface;
 use Fratily\Renderer\RendererInterface;
+use Fratily\Utility\Reflector;
 use Fratily\Exception\PropertyUndefinedException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -117,7 +118,7 @@ abstract class Controller{
             throw new Exception\ActionUndefinedException(static::class, $action);
         }
 
-        $method = new \ReflectionMethod($this, $action);
+        $method = Reflector::getMethod(static::class, $action);
 
         //  アクションメソッドがpulicかつ非staticか
         if(!$method->isPublic()){
@@ -130,29 +131,17 @@ abstract class Controller{
             );
         }
 
-        $args   = [];
-
-        //  アクションメソッド呼び出し時の引数解決
-        foreach($method->getParameters() as $param){
-            $value  = null;
-
-            if($param->getName() === "params"){
-                $value  = $params;
-            }else if($param->getName() === "request"){
-                $value  = $request;
-            }else if(!isset($params[$param->getName()])){
-                if($param->isDefaultValueAvailable()){
-                    $value  = $param->getDefaultValue();
-                }
-            }else{
-                $value  = $params[$param->getName()];
-            }
-
-            $args[]   = $value;
-        }
-
         //  アクションメソッド実行
-        $return = $method->invokeArgs($this, $args);
+        $return = $method->invokeArgs(
+            $this,
+            Reflector::bindParams2Args(
+                $method,
+                [
+                    "params"    => $params,
+                    "request"   => $request
+                ] + $params
+            )
+        );
 
         if($return instanceof ResponseInterface){
             return $return;
