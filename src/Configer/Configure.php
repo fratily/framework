@@ -125,7 +125,7 @@ class Configure{
      * 
      * @return  void
      */
-    public static function set(string $key, $val, int $option = 0){
+    public static function set(string $key, $val, int $option = null){
         $node   = &self::$config;
         $_key   = $key;
         
@@ -144,6 +144,6 @@ class Configure{
         }
         
         $node[0]    = $val;
-        $node[2]    = $option;
+        $node[2]    = $option ?? (array_key_exists(2, $node) ? $node[2] : 0);
     }
 }
