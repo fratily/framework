@@ -103,10 +103,8 @@ class ConfigData{
             $valid  = $this->valid[$key] ?? null;
             $format = $this->format[$key] ?? null;
             
-            $val    = $format === null ? $val : $format($val);
-            
             if($valid === null || (bool)$valid($val)){
-                $this->data[$key]   = $val;
+                $this->data[$key]   = $format === null ? $val : $format($val);
                 
                 return true;
             }
