@@ -20,6 +20,7 @@ use Fratily\Http\ResponseFactoryInterface;
 use Fratily\Router\RouterInterface;
 use Fratily\Renderer\RendererInterface;
 use Fratily\Controller\ControllerFactory;
+use Fratily\Controller\ControllerFactoryInterface;
 use Fratily\Exception\PropertyUndefinedException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -160,7 +161,7 @@ abstract class Application{
      * 
      * @return  ControllerFactory
      */
-    protected function buildControllerFactory(): ControllerFactory{
+    protected function buildControllerFactory(): ControllerFactoryInterface{
         return new ControllerFactory($this->container, $this->buildResponseFactory(), $this->buildRenderer());
     }
     

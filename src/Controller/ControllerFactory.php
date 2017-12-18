@@ -21,7 +21,7 @@ use Psr\Container\ContainerInterface;
 /**
  *
  */
-class ControllerFactory{
+class ControllerFactory implements ControllerFactoryInterface{
 
     const CTRL_NS   = "\\App\\Controller\\";
 
@@ -87,7 +87,7 @@ class ControllerFactory{
      *
      * @return  Controller
      */
-    public function getController(string $controller){
+    public function getController(string $controller): Controller{
         $class  = ($this->ctrlNs ?? self::CTRL_NS)
             . strtr(ucwords(strtr($controller, ["-" => " "])), [" " => ""])
             . "Controller";
@@ -104,7 +104,7 @@ class ControllerFactory{
      *
      * @return  ErrorControllerInterface
      */
-    public function getErrorController(){
+    public function getErrorController(): ErrorControllerInterface{
         $class  = $this->errClass ?? ErrorController::class;
         return new $class($this->container, $this->responseFactory, $this->renderer);
     }
