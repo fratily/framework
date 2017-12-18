@@ -14,50 +14,83 @@
 namespace Fratily\Configer;
 
 /**
- * Configure class.
- * 
- * @todo    abc.*.ghi, abc.{...} 等のアクセス方法にも対応する（検討）
- * @todo    Hashクラスに共通部分をまとめる
+ * @todo    Hashクラスに共通部分をまとめる(たぶん無理)
  */
 class Configure{
+    
+    const ALLOW_OVERWRITE   = 1;
     
     private static $config = [
         1   => []
     ];
     
     /**
-     * コンフィグデータを取得する
+     * ノードから指定したキーに一致する子ノードをすべて取得する
+     * 
+     * @param   mixed[] $node
+     * @param   string  $key
+     * 
+     * @return  array[]|null
+     */
+    private static function getChildren(array $node, string $key){
+        if(!isset($node[1]) || !is_array($node[1])){
+            return null;
+        }
+        
+        if($key === "*"){
+            if(empty($node[1])){
+                return null;
+            }
+
+            return array_keys($node[1]);
+        }else{
+            if(!isset($node[1][$key])){
+                return null;
+            }
+            
+            return [$key];
+        }
+    }
+    
+    /**
+     * コンフィグデータを返す
      * 
      * @param   string  $key
      * 
      * @return  mixed|null
      */
     public static function get(string $key){
-        $node   = self::$config;
+        $nodes  = [self::$config];
         $keys   = explode(".", $key);
-        $last   = array_pop($keys);
         
         foreach($keys as $key){
-            if(!isset($node[1][$key])){
-                return null;
+            $newNodes   = [];
+            foreach($nodes as $node){
+                $children   = self::getChildren($node, $key);
+                
+                if($children !== null){
+                    foreach($children as $child){
+                        $newNodes[] = $node[1][$child];
+                    }
+                }
             }
             
-            $node = $node[1][$key];
+            $nodes  = $newNodes;
         }
         
-        if(isset($node[1][$last])){
-            return $node[1][$last][0];
-        }else if($last === "*"){
+        if(empty($nodes)){
+            return null;
+        }else if(count($nodes) === 1){
+            return array_pop($nodes)[0] ?? null;
+        }else{
             $return = [];
-            
-            foreach($node[1] as $key => $child){
-                $return[$key] = $child[0];
+            foreach($nodes as $node){
+                if(array_key_exists(0, $node)){
+                    $return[]   = $node[0];
+                }
             }
-            
             return $return;
         }
-        
-        return null;
     }
     
     /**
@@ -78,7 +111,7 @@ class Configure{
             $node   = $node[1][$key];
         }
         
-        return true;
+        return array_key_exists(0, $node);
     }
     
     /**
@@ -86,48 +119,31 @@ class Configure{
      * 
      * @param   string  $key
      * @param   mixed   $val
+     * @param   int $option
+     * 
+     * @throws  Exception\CanNotOverwriteExecption
      * 
      * @return  void
      */
-    public static function set(string $key, $val){
+    public static function set(string $key, $val, int $option = 0){
         $node   = &self::$config;
+        $_key   = $key;
         
         foreach(explode(".", $key) as $key){
             if(!isset($node[1][$key])){
-                $node[1][$key]  = [0 => null, 1 => []];
+                $node[1][$key]  = [1 => []];
             }
             
             $node = &$node[1][$key];
         }
         
+        if(array_key_exists(0, $node) && array_key_exists(2, $node)){
+            if(!($node[2] & self::ALLOW_OVERWRITE)){
+                throw new Exception\CanNotOverwriteException($_key);
+            }
+        }
+        
         $node[0]    = $val;
+        $node[2]    = $option;
     }
-    
-    /**
-     * 
-     * 
-     * @param   string  $key
-     *      
-     * 
-     * @return  void
-     */
-//    public static function remove(string $key){
-//        $node   = &self::$config;
-//        $keys   = explode(".", $key);
-//        $last   = array_pop($keys);
-//        
-//        foreach($keys as $key){
-//            if(!isset($node[1][$key])){
-//                return;
-//            }
-//            
-//            $node = &$node[1][$key];
-//        }
-//
-//        if(isset($node[1][$last])){
-//            unset($node[1][$last]);
-//        }else if($last === "*"){
-//            $node[1]    = [];
-//        }
-//    }
 }
