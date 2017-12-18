@@ -61,7 +61,7 @@ trait StaticConfigTrait{
         
         if($id === null){
             do{
-                $id = "config_" . bin2hex(random_bytes(16));
+                $id = "config_" . bin2hex(random_bytes(2));
             }while(Configure::has("__StaticConfigTrait.{$id}"));
             
             Configure::set("__StaticConfigTrait.{$id}", satic::initConfigData(new ConfigData()));
