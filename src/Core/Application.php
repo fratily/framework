@@ -31,8 +31,6 @@ use Psr\Http\Message\ServerRequestInterface;
  * @property-read   ContainerInterface  $container
  */
 abstract class Application{
-    
-    const CTRL_NS   = "\\App\\Controller\\";
 
     /**
      * デバッグモード有効フラグ
