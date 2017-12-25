@@ -25,5 +25,8 @@
         "files": [
             "config/bootstrap.php"
         ]
+    },
+    "scripts": {
+        "test": "phpunit tests/"
     }
 }

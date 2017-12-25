@@ -16,7 +16,7 @@ namespace FratilyTest\Utility;
 use Fratily\Utility\Reflector;
 
 /**
- * PHPのリフレクション拡張クラス
+ * 
  */
 class ReflectorTest extends \PHPUnit\Framework\TestCase{
 
@@ -144,6 +144,45 @@ class ReflectorTest extends \PHPUnit\Framework\TestCase{
             [Reflector::class . "::getClass"],
             [new class{public function __invoke(){}}],
             [[new class{function foo(){}}, "foo"]]
+        ];
+    }
+    
+    /**
+     * 関数の引数にパラメーターをバインドする
+     * 
+     * @dataProvider     provideBinidParams2Args
+     */
+    public function testBindParams2Args($func, $params, $default, $expected){
+        $args   = Reflector::bindParams2Args($func, $params, $default);
+        $this->assertEquals($expected, $args);
+    }
+    
+    public function provideBinidParams2Args(){
+        return [
+            [
+                Reflector::getFunction(function($p1, $p2, $p3){}),
+                ["p1" => 1, "p2" => 2, "p3" => 3],
+                null,
+                [1, 2, 3]
+            ],
+            [
+                Reflector::getFunction(function($p1, $p2, $p3){}),
+                ["p1" => 1, "p3" => 3],
+                null,
+                [1, null, 3]
+            ],
+            [
+                Reflector::getFunction(function($p1, $p2, $p3){}),
+                ["p1" => 1, "p4" => 2],
+                "undefine",
+                [1, "undefine", "undefine"]
+            ],
+            [
+                Reflector::getFunction(function($p1, $p2, $p3 = null){}),
+                ["p1" => 1],
+                "undefine",
+                [1, "undefine", null]
+            ]
         ];
     }
 }

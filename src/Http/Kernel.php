@@ -13,7 +13,7 @@
  */
 namespace Fratily\Http;
 
-use Fratily\Controller\ControllerFactory;
+use Fratily\Controller\ControllerFactoryInterface;
 use Fratily\Router\RouterInterface;
 use Fratily\Middleware\MiddlewareHandlerInterface;
 use Fratily\Middleware\MiddlewareInterface;
@@ -28,7 +28,7 @@ class Kernel implements MiddlewareHandlerInterface{
     /**
      * コントローラーファクトリー
      * 
-     * @var ControllerFactory
+     * @var ControllerFactoryInterface
      */
     private $ctrlFactory;
 
@@ -53,7 +53,7 @@ class Kernel implements MiddlewareHandlerInterface{
      *
      * @return  void
      */
-    public function __construct(ControllerFactory $factory, RouterInterface $router){
+    public function __construct(ControllerFactoryInterface $factory, RouterInterface $router){
         $this->ctrlFactory  = $factory;
         $this->router       = $router;
         $this->queue        = new \SplQueue();

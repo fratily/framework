@@ -61,7 +61,7 @@ trait InstanceConfigTrait{
         
         if($id === null){
             do{
-                $id = "config_" . bin2hex(random_bytes(16));
+                $id = "config_" . bin2hex(random_bytes(2));
             }while(Configure::has("__InstanceConfigTrait.{$id}"));
             
             Configure::set("__InstanceConfigTrait.{$id}", $this->initConfigData(new ConfigData()));
