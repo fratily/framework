@@ -21,7 +21,7 @@ use Psr\Container\ContainerInterface;
 /**
  *
  */
-class ControllerFactory{
+class ControllerFactory implements ControllerFactoryInterface{
 
     const CTRL_NS   = "\\App\\Controller\\";
 
