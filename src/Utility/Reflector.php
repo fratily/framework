@@ -42,12 +42,13 @@ class Reflector{
      * クラスのリフレクションオブジェクトを返す
      *
      * @param   string|object   $class
+     * @param   bool    $throw
      *
      * @throws  \Fratily\Exception\ClassUndefinedException
      *
      * @return  \ReflectionClass
      */
-    public static function getClass($class){
+    public static function getClass($class, bool $throw = true){
         if(is_object($class)){
             $class  = get_class($class);
         }else if(!is_string($class)){
@@ -58,7 +59,11 @@ class Reflector{
 
         if(!isset(self::$classes[$key])){
             if(!class_exists($class)){
-                throw new \Fratily\Exception\ClassUndefinedException($class);
+                if($throw){
+                    throw new \Fratily\Exception\ClassUndefinedException($class);
+                }
+
+                return false;
             }
 
             self::$classes[$key]  = new \ReflectionClass($class);
@@ -72,13 +77,18 @@ class Reflector{
      *
      * @param   string|object   $class
      * @param   string  $method
+     * @param   bool    $throw
      *
      * @throws  \Fratily\Exception\MethodUndefinedException
      *
      * @return  \ReflectionMethod
      */
-    public static function getMethod($class, string $method){
-        $class  = self::getClass($class);
+    public static function getMethod($class, string $method, bool $throw = true){
+        $class  = self::getClass($class, $throw);
+
+        if($class === false){
+            return false;
+        }
 
         if(!isset(self::$methods[$class->getName()][$method])){
             if(!$class->hasMethod($method)){
@@ -96,12 +106,19 @@ class Reflector{
      *
      * @param   string|object   $class
      * @param   int $filter
+     * @param   bool    $throw
+     *
      * @throws  \Fratily\Exception\ClassUndefinedException
      *
      * @return  \ReflectionMethod[]
      */
-    public static function getMethods($class, int $filter = null){
-        $class      = self::getClass($class);
+    public static function getMethods($class, int $filter = null, bool $throw = true){
+        $class      = self::getClass($class, $throw);
+
+        if($class === false){
+            return false;
+        }
+
         $methods    = $class->getMethods($filter);
 
         foreach($methods as $method){
@@ -118,13 +135,18 @@ class Reflector{
      *
      * @param   string|object   $class
      * @param   string  $property
+     * @param   bool    $throw
      *
      * @throws  \Fratily\Exception\PropertyUndefinedException
      *
      * @return  \ReflectionProperty
      */
-    public static function getProperty($class, string $property){
-        $class  = self::getClass($class);
+    public static function getProperty($class, string $property, bool $throw = true){
+        $class  = self::getClass($class, $throw);
+
+        if($class === false){
+            return false;
+        }
 
         if(!isset(self::$properties[$class->getName()][$property])){
             if(!$class->hasProperty($property)){
@@ -142,12 +164,19 @@ class Reflector{
      *
      * @param   string|object   $class
      * @param   int $filter
+     * @param   bool    $throw
+     *
      * @throws  \Fratily\Exception\ClassUndefinedException
      *
      * @return  \ReflectionProperty[]
      */
-    public static function getProperties($class, int $filter = null){
-        $class      = self::getClass($class);
+    public static function getProperties($class, int $filter = null, bool $throw = true){
+        $class      = self::getClass($class, $throw);
+
+        if($class === false){
+            return false;
+        }
+
         $properties = $class->getProperties($filter);
 
         foreach($properties as $property){
@@ -163,24 +192,29 @@ class Reflector{
      * 関数のリフレクションオブジェクトを返す
      *
      * @param   callable    $function
+     * @param   bool    $throw
      *
      * @return  \ReflectionFunction
      */
-    public static function getFunction($function){
+    public static function getFunction($function, bool $throw = true){
         if(!is_string($function) && !($function instanceof \Closure)){
             throw new \InvalidArgumentException;
         }else if(is_string($function) && strpos($function, ":") !== false){
             throw new \InvalidArgumentException;
         }
 
+        if(is_string($function) && !function_exists($function)){
+            if($throw){
+                throw new \Fratily\Exception\FunctionUndefinedException($function);
+            }
+
+            return false;
+        }
+
         $key    = is_string($function) ? $function : "-".spl_object_hash($function);
 
         if(!isset(self::$functions[$key])){
-            try{
-                self::$functions[$key]  = new \ReflectionFunction($function);
-            }catch(\ReflectionException $e){
-                throw new \InvalidArgumentException;
-            }
+            self::$functions[$key]  = new \ReflectionFunction($function);
         }
 
         return self::$functions[$key];
