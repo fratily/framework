@@ -145,7 +145,11 @@ class ControllerFactory{
      * @return  bool
      */
     protected function isController(string $class){
-        return Reflector::getClass($class)->isSubclassOf(Controller::class);
+        if(($class = Reflector::getClass($class, false)) === false){
+            return false;
+        }
+
+        return $class->isSubclassOf(Controller::class);
     }
 
     /**
@@ -157,7 +161,11 @@ class ControllerFactory{
      * @return  bool
      */
     protected function isErrorController(string $class){
-        return Reflector::getClass($class)->isSubclassOf(Controller::class)
-            && Reflector::getClass($class)->implementsInterface(ErrorControllerInterface::class);
+        if(($class = Reflector::getClass($class, false)) === false){
+            return false;
+        }
+
+        return $class->isSubclassOf(Controller::class)
+            && $class->implementsInterface(ErrorControllerInterface::class);
     }
 }
