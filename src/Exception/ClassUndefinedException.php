@@ -6,7 +6,7 @@
  *
  * @see https://github.com/kento-oka/agilephp
  *
- * @author      Kento Oka <oka.kento0311@gmail.com>
+ * @author      Kento Oka <kento.oka@kentoka.com>
  * @copyright   (c) 2017 Kento Oka
  * @license     MIT
  * @since       1.0.0
