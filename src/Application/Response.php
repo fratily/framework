@@ -11,9 +11,9 @@
  * @license     MIT
  * @since       1.0.0
  */
-namespace Fratily\Http;
+namespace Fratily\Application;
 
-use Zend\Diactoros\Response\EmitterInterface;
+use Fratily\Http\Message\Response\Emitter;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -27,22 +27,6 @@ class Response{
      * @var ResponseInterface
      */
     private $response;
-    
-    /**
-     * Emitter instance
-     * 
-     * @var EmitterInterface
-     */
-    private static $emitter;
-    
-    /**
-     * Emitterをセットする
-     * 
-     * @param   EmitterInterface    $emitter
-     */
-    public static function setEmitter(EmitterInterface $emitter){
-        self::$emitter  = $emitter;
-    }
     
     /**
      * Constructor
