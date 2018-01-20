@@ -13,20 +13,10 @@
  */
 namespace Fratily\Application;
 
-use Fratily\Http\ResponseFactoryInterface;
-use Fratily\Renderer\RendererInterface;
-use Fratily\Utility\Reflector;
-use Fratily\Exception\PropertyUndefinedException;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Container\ContainerInterface;
 
 /**
  *
- *
- * @property-read   ContainerInterface  $container
- * @property-read   ResponseInterface   $response
- * @property-read   RendererInterface   $renderer
  */
 abstract class Controller{
 
@@ -46,92 +36,11 @@ abstract class Controller{
         $this->container        = $container;
     }
 
-    /**
-     * Get property
-     *
-     * @param   string  $key
-     *
-     * @throws  Exception\PropertyUndefinedException
-     *
-     * @return  mixed
-     */
-    protected function __get($key){
-        switch($key){
-            case "container":
-                return $this->container;
-            case "response":
-                return $this->responseFactory->createResponse();
-            case "renderer":
-                return $this->renderer;
-        }
-
-        throw new PropertyUndefinedException(static::class, $key);
+    protected function getService(string $id){
+        return $this->container->get($id);
     }
 
-    /**
-     * アクションを実行する
-     *
-     * @param   string  $action
-     *      実行するアクション名
-     * @param   ServerRequestInterface  $request
-     *      リクエストオブジェクト
-     * @param   mixed[] $params
-     *      パラメーター
-     *
-     * @throws  Exception\ActionImplementException
-     * @throws  Exception\ActionUndefinedException
-     *
-     * @return  ResponseInterface
-     */
-    public function execute(
-        string $action,
-        ServerRequestInterface $request,
-        array $params = []
-    ): ResponseInterface{
-        //  アクションメソッド名解決
-        $action = lcfirst(strtr(ucwords(strtr($action, ["-" => " "])), [" " => ""]));
-
-        //  アクションメソッドがユーザー実装コントローラーで定義されているか
-        if(method_exists(self::class, $action) || !method_exists($this, $action)){
-            throw new Exception\ActionUndefinedException(static::class, $action);
-        }
-
-        $method = Reflector::getMethod(static::class, $action);
-
-        //  アクションメソッドがpulicかつ非staticか
-        if(!$method->isPublic()){
-            throw new Exception\ActionImplementException(static::class, $action,
-                "Visibility of action {class.name}::{method.name}() is not public."
-            );
-        }else if($method->isStatic()){
-            throw new Exception\ActionImplementException(static::class, $action,
-                "Action {class.name}::{method.name}() is static method."
-            );
-        }
-
-        //  アクションメソッド実行
-        $return = $method->invokeArgs(
-            $this,
-            Reflector::bindParams2Args(
-                $method,
-                [
-                    "params"    => $params,
-                    "request"   => $request
-                ] + $params
-            )
-        );
-
-        if($return instanceof ResponseInterface){
-            return $return;
-        }else if(is_scalar($return)){
-            $response   = $this->response;
-            $response->getBody()->write((string)$return);
-
-            return $response;
-        }
-
-        throw new Exception\ActionImplementException(static::class, $action,
-            "Action {class.name}::{method.name} dose not returnd ResponseInterface or scalar value."
-        );
+    protected function hasService(string $id){
+        return $this->container->has($id);
     }
 }
