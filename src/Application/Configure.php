@@ -405,7 +405,7 @@ abstract class Configure{
 
         $ref    = new \ReflectionClass($controller);
 
-        if(!$ref->isSubclassOf(Controller::class)){
+        if(!$ref->implementsInterface(ErrorControllerInterface::class)){
             throw new \InvalidArgumentException();
         }
 
