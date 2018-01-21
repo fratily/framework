@@ -20,27 +20,27 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * 
+ *
  */
 class ActionMiddleware implements MiddlewareInterface{
-    
+
     /**
      * @var object|null
      */
     private $object;
-    
+
     /**
      * @var ReflectionCallable
      */
     private $action;
-    
+
     /**
      * @var mixed[]
      */
     private $params;
-    
+
     /**
-     * 
+     *
      * @example new ActionMiddleware(function(){}, []);
      * @example new ActionMiddleware(new Controller(), "index", []);
      */
@@ -52,26 +52,26 @@ class ActionMiddleware implements MiddlewareInterface{
             $this->action   = new ReflectionCallable($args[0]);
             $this->params   = $args[1];
         }else if(isset($args[0], $args[1], $args[2])
-            && is_a($args[0], Controller::class) && is_string($args[1]) && is_array($args[2])
+            && ($args[0] instanceof Controller) && is_string($args[1]) && is_array($args[2])
         ){
             //  controller object, action method name, params
             if(!method_exists($args[0], $args[1])){
                 throw new \InvalidArgumentException();
             }
-            
+
             $this->object   = $args[0];
             $this->action   = new ReflectionCallable([$args[0], $args[1]]);
-            
+
             if(!$this->action->getReflection()->isPublic()
                 || $this->action->getReflection()->isStatic()
             ){
                 throw new \InvalidArgumentException();
             }
+        }else{
+            throw new \InvalidArgumentException();
         }
-        
-        throw new \InvalidArgumentException();
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -79,24 +79,28 @@ class ActionMiddleware implements MiddlewareInterface{
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface{
-        $response   = $handler->handle($request);
-        $return     = $this->action->invokeMapedArgs(
+        $contents   = $this->action->invokeMapedArgs(
             $this->object,
             [
-                "request"   => $request,
-                "response"  => $response
+                "_request"   => $request,
+                "_params"    => $this->params
             ] + $this->params
         );
-        
-        if(is_scalar($return) && $response->getBody()->isWritable()){
-            $body   = $response->getBody();
-            $body->write($return);
-            
-            $return = $response->withBody($body);
-        }else if(!($return instanceof ResponseInterface)){
-            $return = $response;
+
+        $response   = $handler->handle($request);
+
+        if($contents === null){
+            $contents   = "";
         }
-        
-        return $return;
+
+        if(is_scalar($contents) && $response->getBody()->isWritable()){
+            $response->getBody()->write($contents);
+        }else if($contents instanceof ResponseInterface){
+            $response   = $contents;
+        }else{
+            throw new \UnexpectedValueException;
+        }
+
+        return $response;
     }
 }
