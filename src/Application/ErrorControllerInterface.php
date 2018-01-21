@@ -21,11 +21,11 @@ class ErrorControllerInterface{
     /**
      * \Fratily\Http\Status\HttpStatusをキャッチした場合に実行されるアクション
      *
-     * @param   int $code
+     * @param   int $status
      *
      * @return  string
      */
-    public function status(int $code): string;
+    public function status(int $status): string;
 
     /**
      * 例外をキャッチしデバッグモードでない場合に実行されるアクション

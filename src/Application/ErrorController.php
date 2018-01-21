@@ -37,7 +37,7 @@ TPL;
     /**
      * {@inheritdoc}
      */
-    public function status(int $code){
+    public function status(int $status){
         return "";
     }
 
