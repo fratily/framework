@@ -13,12 +13,10 @@
  */
 namespace Fratily\Application;
 
-use Fratily\Reflection\ReflectionCallable;
-
 /**
  *
  */
-class ErrorController extends Controller{
+class ErrorController extends Controller implements ErrorControllerInterface{
 
     const TPL_THROWABLE = <<<TPL
 <!DOCTYPE html>
@@ -39,13 +37,7 @@ TPL;
     /**
      * {@inheritdoc}
      */
-    public function status(int $code, array $params = []){
-        if(method_exists($this, "http$code")){
-            $action = new ReflectionCallable([$this, "http{$code}"]);
-
-            return $action->invokeMapedArgs($params);
-        }
-
+    public function status(int $code){
         return "";
     }
 
