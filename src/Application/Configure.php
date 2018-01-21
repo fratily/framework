@@ -364,4 +364,51 @@ abstract class Configure{
 
         return $path;
     }
+
+    /**
+     * コントローラークラスのネームスペースを取得する
+     *
+     * @return  string
+     */
+    public static function getControllerNamespace(){
+        $key    = "app.controller.namespace";
+
+        return self::get($key) ?? "App\\Controller\\";
+    }
+
+    /**
+     * コントローラークラスのネームスペースを登録する
+     *
+     * @param   string  $ns
+     */
+    public static function setControllerNamespace(string $ns){
+        $key    = "app.controller.namespace";
+
+        self::set($key, $ns);
+    }
+
+    /**
+     * エラーコントローラーのクラス名を取得する
+     */
+    public static function getErrorController(){
+        $key    = "app.controller.error";
+
+        return self::get($key) ?? ErrorController::class;
+    }
+
+    public static function setErrorController(string $controller){
+        $key    = "app.controller.error";
+
+        if(!class_exists($controller)){
+            throw new \InvalidArgumentException();
+        }
+
+        $ref    = new \ReflectionClass($controller);
+
+        if(!$ref->isSubclassOf(Controller::class)){
+            throw new \InvalidArgumentException();
+        }
+
+        self::set($key, $controller);
+    }
 }
