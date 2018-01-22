@@ -15,6 +15,8 @@ namespace Fratily\Application;
 
 use Fratily\Router\RouteCollector;
 use Fratily\Router\Dispatcher;
+use Fratily\Reflection\ReflectionCallable;
+use Fratily\Http\Message\Response as HttpResponse;
 use Fratily\Http\Server\RequestHandler;
 use Fratily\Http\Server\RequestHandlerInterface;
 use Fratily\Http\Server\MiddlewareInterface;
@@ -66,6 +68,48 @@ class App implements MiddlewareInterface{
      */
     private $afterMiddleware    = [];
 
+    private function resolveParams($params){
+        $return = [
+            "action"        => $this->resolveAction($params["action"] ?? null),
+            "middleware"    => [
+                "before"    => $this->resolveMiddleware($params["middleware.before"] ?? []),
+                "after"     => $this->resolveMiddleware($params["middleware.after"] ?? [])
+            ]
+        ];
+        
+        unset(
+            $params["action"],
+            $params["middleware.before"],
+            $params["middleware.after"]
+        );
+        
+        $return["params"]   = $params;
+        
+        return $return;
+    }
+    
+    private function resolveAction($action){
+        if(is_callable($action)){
+            return $action;
+        }else if(is_string($action) && ($pos = strpos($action, "@")) !== false){
+            $controller = $this->getController(substr($action, 0, $pos));
+            $method     = substr($action, $pos + 1);
+            
+            if($controller !== null && method_exists($controller, $method)){
+                return [$controller, $method];
+            }
+        }
+        
+        return null;
+    }
+    
+    private function resolveMiddleware($middlewares){
+        return array_filter((array)$middlewares, function($v){
+            return $v instanceof MiddlewareInterface;
+        });
+    }
+
+
     /**
      * Constructor
      *
@@ -96,10 +140,41 @@ class App implements MiddlewareInterface{
                 $this->getHandler($response)->handle($request)
             );
         }catch(\Fratily\Http\Status\HttpStatus $e){
+            $method = "http{$e->getStatus()}";
+            $status = $e->getStatus();
+            $params = [];
             
+            if($e instanceof \Fratily\Http\Status\MethodNotAllowed){
+                $params["allowed"]  = $e->getAllowed();
+            }
         }catch(\Throwable $e){
-
+            $method = "throwable";
+            $status = 500;
+            $params = [];
         }
+
+        $controller = Configure::getErrorController();
+        $method     = method_exists($controller, $method) ? $method : "status";
+        $action     = new ReflectionCallable([$controller, $method]);
+        
+        $contents   = $action->invokeMapedArgs($controller, [
+            "_request"  => $request,
+            "_params"   => $params,
+            "status"    => $status
+        ] + $params) ?? "";
+        
+        $response   = $response ?? new HttpResponse();
+        $response   = $response->withStatus($status);
+
+        if(is_scalar($contents) && $response->getBody()->isWritable()){
+            $response->getBody()->write($contents);
+        }else if($contents instanceof ResponseInterface){
+            $response   = $contents;
+        }else{
+            throw new \UnexpectedValueException;
+        }
+
+        return new Response($response);
     }
 
     //  Middleware
@@ -111,20 +186,40 @@ class App implements MiddlewareInterface{
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface{
-        $localHandler   = new RequestHandler();
+        $localHandler   = new RequestHandler($handler->handle($request));
         $dispatcher     = new Dispatcher($this->routeCollector);
         $result         = $dispatcher->dispatch(
             $request->getMethod(),
             $request->getUri()->getPath()
         );
 
-        switch($result[]){}
-        foreach($this->beforeMiddleware as $middleware){
+        switch($result[0]){
+            case Dispatcher::NOT_FOUND:
+                throw new \Fratily\Http\Status\NotFound();
+                
+            case Dispatcher::METHOD_NOT_ALLOWED:
+                throw new \Fratily\Http\Status\MethodNotAllowed($result[1]);
+        }
+        
+        $params = $this->resolveParams($result[1]);
+        
+        if($params["action"] === null){
+            throw new \LogicException;
+        }
+        
+        foreach($params["middleware"]["before"] as $middleware){
             $localHandler->append($middleware);
         }
 
-        $localHandler->append();
+        $localHandler->append(
+            new ActionMiddleware($params["action"], $params["params"])
+        );
 
+        foreach($params["middleware"]["after"] as $middleware){
+            $localHandler->append($middleware);
+        }
+        
+        return $localHandler->handle($request);
     }
 
     //  Request Handler
@@ -171,10 +266,21 @@ class App implements MiddlewareInterface{
      */
     public function getHandler(ResponseInterface $response = null){
         $handler    = new RequestHandler($response);
-
-        foreach(){
-
+        $find       = false;
+        
+        foreach($this->middleware as $middleware){
+            if($middleware === $this){
+                $find   = true;
+            }
+            
+            $handler->append($middleware);
         }
+        
+        if(!$find){
+            $handler->append($this);
+        }
+        
+        return $handler;
     }
 
     public function getController(string $name){
@@ -183,10 +289,10 @@ class App implements MiddlewareInterface{
             . "Controller";
 
         if(class_exists($class)){
-            $object = new $class($this->container);
-
-            if($object instanceof Controller){
-                return $object;
+            $ref    = new \ReflectionClass($class);
+            
+            if($ref->isSubclassOf(Controller::class)){
+                return new $class($this->container);
             }
         }
 
