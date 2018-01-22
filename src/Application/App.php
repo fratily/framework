@@ -119,7 +119,7 @@ class App implements MiddlewareInterface{
         $this->startedAt        = microtime(true);
         $this->isDebug          = $debug;
         $this->container        = Configure::getContainer();
-        $this->routes           = new RouteCollector();
+        $this->routes           = Configure::getRoutes();
     }
 
     /**
