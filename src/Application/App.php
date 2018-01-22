@@ -153,7 +153,7 @@ class App implements MiddlewareInterface{
             $params = [];
         }
 
-        $controller = Configure::getErrorController();
+        $controller = $this->getErrorController();
         $method     = method_exists($controller, $method) ? $method : "status";
         $action     = new ReflectionCallable([$controller, $method]);
         
@@ -299,19 +299,9 @@ class App implements MiddlewareInterface{
         return null;
     }
 
-    public function getErrorController(string $name){
-        $class  = static::NS_CTRL
-            . strtr(ucwords(strtr($name, ["-" => " "])), [" " => ""])
-            . "Controller";
-
-        if(class_exists($class)){
-            $object = new $class($this->container);
-
-            if($object instanceof ErrorController){
-                return $object;
-            }
-        }
-
-        return null;
+    public function getErrorController(){
+        $class  = Configure::getErrorController();
+        
+        return new $class($this->container);
     }
 }
