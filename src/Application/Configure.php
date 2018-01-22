@@ -198,7 +198,7 @@ abstract class Configure{
         
         if(!($c instanceof RouteCollector)){
             throw Exception\ConfigureException::unexpectedValue(
-                $key, ContainerInterface::class
+                $key, RouteCollector::class
             );
         }
         
