@@ -150,7 +150,9 @@ class App implements MiddlewareInterface{
         }catch(\Throwable $e){
             $method = "throwable";
             $status = 500;
-            $params = [];
+            $params = [
+                "e" => $e
+            ];
         }
 
         $controller = $this->getErrorController();
