@@ -189,7 +189,7 @@ class App implements MiddlewareInterface{
         RequestHandlerInterface $handler
     ): ResponseInterface{
         $localHandler   = new RequestHandler($handler->handle($request));
-        $dispatcher     = new Dispatcher($this->routeCollector);
+        $dispatcher     = new Dispatcher($this->routes);
         $result         = $dispatcher->dispatch(
             $request->getMethod(),
             $request->getUri()->getPath()
