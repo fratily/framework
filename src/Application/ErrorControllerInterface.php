@@ -16,7 +16,7 @@ namespace Fratily\Application;
 /**
  *
  */
-class ErrorControllerInterface{
+interface ErrorControllerInterface{
 
     /**
      * \Fratily\Http\Status\HttpStatusをキャッチした場合に実行されるアクション
