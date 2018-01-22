@@ -13,6 +13,7 @@
  */
 namespace Fratily\Application;
 
+use Fratily\Router\RouteCollector;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -184,6 +185,37 @@ abstract class Configure{
         self::set($key, $container);
     }
 
+    /**
+     * ルートコレクターを取得する
+     * 
+     * @return  RouteCollector
+     * 
+     * @throws  Exception\ConfigureException
+     */
+    public static function getRoutes(){
+        $key    = "app.routing.collector";
+        $c      = self::get($key);
+        
+        if(!($c instanceof RouteCollector)){
+            throw Exception\ConfigureException::unexpectedValue(
+                $key, ContainerInterface::class
+            );
+        }
+        
+        return $c;
+    }
+    
+    /**
+     * ルートコレクターを登録する
+     * 
+     * @param   RouteCollector  $collector
+     */
+    public static function setRoutes(RouteCollector $collector){
+        $key    = "app.routing.collector";
+        
+        self::set($key, $collector);
+    }
+    
     /**
      * イベントを取得する
      *
