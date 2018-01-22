@@ -61,6 +61,7 @@ class ActionMiddleware implements MiddlewareInterface{
 
             $this->object   = $args[0];
             $this->action   = new ReflectionCallable([$args[0], $args[1]]);
+            $this->params   = $args[2];
 
             if(!$this->action->getReflection()->isPublic()
                 || $this->action->getReflection()->isStatic()
