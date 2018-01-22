@@ -23,6 +23,11 @@ class ErrorController extends Controller implements ErrorControllerInterface{
 <html>
     <head>
         <title>Thrown {name}</title>
+        <style>
+            html,body{margin: 0;width: 100vw;height: 100vh;padding: 0;}
+            body{overflow-x: hidden;overflow-y: scroll;backgroud-color: #eee;color: #333;}
+            dd{color: #999;}
+        </style>
     </head>
     <body>
         <h1>Thrown {name}</h1>
