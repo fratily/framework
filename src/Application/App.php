@@ -96,7 +96,10 @@ class App implements MiddlewareInterface{
             $method     = substr($action, $pos + 1);
             
             if($controller !== null && method_exists($controller, $method)){
-                return [$controller, $method];
+                return [
+                    "controller"    => $controller,
+                    "method"        => $method
+                ];
             }
         }
         
@@ -213,9 +216,19 @@ class App implements MiddlewareInterface{
             $localHandler->append($middleware);
         }
 
-        $localHandler->append(
-            new ActionMiddleware($params["action"], $params["params"])
-        );
+        if(is_array($params["action"]) && isset($params["action"]["controller"])){
+            $localHandler->append(
+                new ActionMiddleware(
+                    $params["action"]["controller"],
+                    $params["action"]["method"],
+                    $params["params"]
+                )
+            );
+        }else{
+            $localHandler->append(
+                new ActionMiddleware($params["action"], $params["params"])
+            );
+        }
 
         foreach($params["middleware"]["after"] as $middleware){
             $localHandler->append($middleware);
