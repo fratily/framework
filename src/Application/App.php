@@ -306,7 +306,7 @@ class App implements MiddlewareInterface{
         if(class_exists($class)){
             $ref    = new \ReflectionClass($class);
             
-            if($ref->isSubclassOf(Controller::class)){
+            if($ref->isSubclassOf(Controller\Controller::class)){
                 return new $class($this->container);
             }
         }

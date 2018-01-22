@@ -52,7 +52,8 @@ class ActionMiddleware implements MiddlewareInterface{
             $this->action   = new ReflectionCallable($args[0]);
             $this->params   = $args[1];
         }else if(isset($args[0], $args[1], $args[2])
-            && ($args[0] instanceof Controller) && is_string($args[1]) && is_array($args[2])
+            && ($args[0] instanceof Controller\Controller)
+            && is_string($args[1]) && is_array($args[2])
         ){
             //  controller object, action method name, params
             if(!method_exists($args[0], $args[1])){

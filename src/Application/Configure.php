@@ -425,7 +425,7 @@ abstract class Configure{
     public static function getErrorController(){
         $key    = "app.controller.error";
 
-        return self::get($key) ?? ErrorController::class;
+        return self::get($key) ?? Controller\ErrorController::class;
     }
 
     public static function setErrorController(string $controller){
@@ -437,7 +437,7 @@ abstract class Configure{
 
         $ref    = new \ReflectionClass($controller);
 
-        if(!$ref->implementsInterface(ErrorControllerInterface::class)){
+        if(!$ref->implementsInterface(Controller\ErrorControllerInterface::class)){
             throw new \InvalidArgumentException();
         }
 
