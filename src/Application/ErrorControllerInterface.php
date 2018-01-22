@@ -25,7 +25,7 @@ interface ErrorControllerInterface{
      *
      * @return  string
      */
-    public function status(int $status): string;
+    public function status(int $status);
 
     /**
      * 例外をキャッチしデバッグモードでない場合に実行されるアクション
@@ -34,5 +34,5 @@ interface ErrorControllerInterface{
      *
      * @return  string
      */
-    public function throwable(\Throwable $e): string;
+    public function throwable(\Throwable $e);
 }
