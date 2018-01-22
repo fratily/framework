@@ -36,11 +36,11 @@ abstract class Controller{
         $this->container        = $container;
     }
 
-    protected function __get($id){
+    public function __get($id){
         return $this->container->get($id);
     }
 
-    protected function __isset($id){
+    public function __isset($id){
         return $this->container->has($id);
     }
 }
