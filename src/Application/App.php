@@ -298,6 +298,13 @@ class App implements MiddlewareInterface{
         return $handler;
     }
 
+    /**
+     * 指定名のコントローラーインスタンスを返す
+     * 
+     * @param   string  $name
+     * 
+     * @return  Controller\Controller|null
+     */
     public function getController(string $name){
         $class  = Configure::getControllerNamespace()
             . strtr(ucwords(strtr($name, ["-" => " "])), [" " => ""])
@@ -314,6 +321,11 @@ class App implements MiddlewareInterface{
         return null;
     }
 
+    /**
+     * エラーコントローラーのインスタンスを返す
+     * 
+     * @return  Controller\ErrorControllerInterface
+     */
     public function getErrorController(){
         $class  = Configure::getErrorController();
         
