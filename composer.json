@@ -13,9 +13,10 @@
         "psr/http-message": "^1.0",
         "psr/container": "^1.0",
         "psr/log": "^1.0",
-        "fratily/router": "~0.1.0",
-        "fratily/http": "~0.1.0",
-        "fratily/reflection": "~0.1.0"
+        "fratily/router": "dev-master",
+        "fratily/http": "dev-master",
+        "fratily/reflection": "dev-master",
+        "fratily/utility": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.0"
