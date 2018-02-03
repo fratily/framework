@@ -21,6 +21,7 @@ use Fratily\Http\Server\RequestHandler;
 use Fratily\Http\Server\RequestHandlerInterface;
 use Fratily\Http\Server\MiddlewareInterface;
 use Psr\Container\ContainerInterface;
+
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -74,7 +75,8 @@ class App implements MiddlewareInterface{
             "middleware"    => [
                 "before"    => $this->resolveMiddleware($params["middleware.before"] ?? []),
                 "after"     => $this->resolveMiddleware($params["middleware.after"] ?? [])
-            ]
+            ],
+            "response"      => $this->resolveResponseFactory($params["response.factory"])
         ];
         
         unset(
@@ -112,6 +114,13 @@ class App implements MiddlewareInterface{
         });
     }
 
+    private function resolveResponseFactory($factory){
+        if(is_object($factory)){
+            if($factory ){
+                
+            }
+        }
+    }
 
     /**
      * Constructor
