@@ -60,21 +60,6 @@ final class App implements MiddlewareInterface{
     private $handler;
 
     /**
-     * @var MiddlewareInterface[]
-     */
-    private $middleware         = [];
-
-    /**
-     * @var MiddlewareInterface[]
-     */
-    private $beforeMiddleware   = [];
-
-    /**
-     * @var MiddlewareInterface[]
-     */
-    private $afterMiddleware    = [];
-
-    /**
      * ルーティング結果から取得したデータをバリデーションする
      * 
      * @param   mixed[] $data
@@ -323,10 +308,6 @@ final class App implements MiddlewareInterface{
     ){
         $handler    = new RequestHandler($response);
         
-        foreach($this->beforeMiddleware as $middleware){
-            $handler->append($middleware);
-        }
-        
         if($before !== null){
             foreach((array)$before as $middleware){
                 $handler->append($middleware);
@@ -339,10 +320,6 @@ final class App implements MiddlewareInterface{
             foreach((array)$after as $middleware){
                 $handler->append($middleware);
             }
-        }
-        
-        foreach($this->afterMiddleware as $middleware){
-            $handler->append($middleware);
         }
         
         return $handler;
