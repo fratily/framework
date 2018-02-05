@@ -18,19 +18,19 @@ use Fratily\Router\Dispatcher;
 use Fratily\Reflection\ReflectionCallable;
 use Fratily\Http\Message\Response as HttpResponse;
 use Fratily\Http\Server\RequestHandler;
-use Fratily\Http\Server\RequestHandlerInterface;
-use Fratily\Http\Server\MiddlewareInterface;
 use Psr\Container\ContainerInterface;
-
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Interop\Http\Factory\ResponseFactoryInterface;
 
 /**
  *
  *
  * @property-read   ContainerInterface  $container
  */
-class App implements MiddlewareInterface{
+final class App implements MiddlewareInterface{
 
     const NS_CTRL   = "App\\Controller\\";
 
@@ -53,6 +53,11 @@ class App implements MiddlewareInterface{
      * @var RouteCollector
      */
     private $routes;
+    
+    /**
+     * @var RequestHandler
+     */
+    private $handler;
 
     /**
      * @var MiddlewareInterface[]
@@ -69,57 +74,67 @@ class App implements MiddlewareInterface{
      */
     private $afterMiddleware    = [];
 
-    private function resolveParams($params){
-        $return = [
-            "action"        => $this->resolveAction($params["action"] ?? null),
-            "middleware"    => [
-                "before"    => $this->resolveMiddleware($params["middleware.before"] ?? []),
-                "after"     => $this->resolveMiddleware($params["middleware.after"] ?? [])
-            ],
-            "response"      => $this->resolveResponseFactory($params["response.factory"])
-        ];
-        
-        unset(
-            $params["action"],
-            $params["middleware.before"],
-            $params["middleware.after"]
-        );
-        
-        $return["params"]   = $params;
-        
-        return $return;
+    /**
+     * ルーティング結果から取得したデータをバリデーションする
+     * 
+     * @param   mixed[] $data
+     * 
+     * @return  bool
+     */
+    private static function validDispatchData(array $data){
+        return self::validAction($data["action"] ?? null)
+            && self::validMiddleware($data["response"] ?? null)
+            && self::validMiddleware($data["middleware.before"] ?? null)
+            && self::validResponse($data["middleware.after"] ?? null);
     }
     
-    private function resolveAction($action){
-        if(is_callable($action)){
-            return $action;
-        }else if(is_string($action) && ($pos = strpos($action, "@")) !== false){
-            $controller = $this->getController(substr($action, 0, $pos));
-            $method     = substr($action, $pos + 1);
-            
-            if($controller !== null && method_exists($controller, $method)){
-                return [
-                    "controller"    => $controller,
-                    "method"        => $method
-                ];
+    /**
+     * アクションをバリデーションする
+     * 
+     * 1文字以上の文字列、もしくはコーラブルな値を許容する
+     * 
+     * @param   mixed   $action
+     * 
+     * @return  bool
+     */
+    private static function validAction($action){
+        return is_callable($action) || is_string($action) && $action !== "";
+    }
+    
+    /**
+     * ミドルウェアをバリデーションする
+     * 
+     * 単一のミドルウェアインスタンス、もしくはミドルウェアのリストを許容する
+     * 
+     * @param   mixed   $middlewares
+     * 
+     * @return  bool
+     */
+    private static function validMiddleware($middlewares){
+        if($middlewares !== null){
+            foreach((array)$middlewares as $middleware){
+                if(!($middleware instanceof MiddlewareInterface)){
+                    return false;
+                }
             }
         }
         
-        return null;
+        return true;
     }
     
-    private function resolveMiddleware($middlewares){
-        return array_filter((array)$middlewares, function($v){
-            return $v instanceof MiddlewareInterface;
-        });
-    }
-
-    private function resolveResponseFactory($factory){
-        if(is_object($factory)){
-            if($factory ){
-                
-            }
-        }
+    /**
+     * レスポンスをバリデーションする
+     * 
+     * レスポンスインスタンス、もしくはレスポンスファクトリを許容する
+     * 
+     * @param   mixed   $response
+     * 
+     * @return  bool
+     */
+    private static function validResponse($response){
+        return $response === null
+            || ($response instanceof ResponseInterface)
+            || ($response instanceof ResponseFactoryInterface);
     }
 
     /**
@@ -128,10 +143,11 @@ class App implements MiddlewareInterface{
      * @param   bool    $debug
      */
     public function __construct(bool $debug){
-        $this->startedAt        = microtime(true);
-        $this->isDebug          = $debug;
-        $this->container        = Configure::getContainer();
-        $this->routes           = Configure::getRoutes();
+        $this->startedAt    = microtime(true);
+        $this->isDebug      = $debug;
+        $this->container    = Configure::getContainer();
+        $this->routes       = Configure::getRoutes();
+        $this->handler      = new RequestHandler();
     }
 
     /**
@@ -148,9 +164,11 @@ class App implements MiddlewareInterface{
         ResponseInterface $response = null
     ): Response{
         try{
-            return new Response(
-                $this->getHandler($response)->handle($request)
-            );
+            if(!$this->handler->hasClass(self::class)){
+                $this->handler->append($this);
+            }
+            
+            return new Response($this->handler->handle($request));
         }catch(\Fratily\Http\Status\HttpStatus $e){
             $method = "http{$e->getStatus()}";
             $status = $e->getStatus();
@@ -200,9 +218,9 @@ class App implements MiddlewareInterface{
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface{
-        $localHandler   = new RequestHandler($handler->handle($request));
-        $dispatcher     = new Dispatcher($this->routes);
-        $result         = $dispatcher->dispatch(
+        //  ルーティング
+        $dispatcher = new Dispatcher($this->routes);
+        $result     = $dispatcher->dispatch(
             $request->getMethod(),
             $request->getUri()->getPath()
         );
@@ -215,35 +233,31 @@ class App implements MiddlewareInterface{
                 throw new \Fratily\Http\Status\MethodNotAllowed($result[1]);
         }
         
-        $params = $this->resolveParams($result[1]);
-        
-        if($params["action"] === null){
-            throw new \LogicException;
+        //  ルートデータのバリデーション
+        if(self::validDispatchData($result[2])){
+            throw new \UnexpectedValueException();
         }
         
-        foreach($params["middleware"]["before"] as $middleware){
-            $localHandler->append($middleware);
-        }
-
-        if(is_array($params["action"]) && isset($params["action"]["controller"])){
-            $localHandler->append(
-                new ActionMiddleware(
-                    $params["action"]["controller"],
-                    $params["action"]["method"],
-                    $params["params"]
-                )
-            );
-        }else{
-            $localHandler->append(
-                new ActionMiddleware($params["action"], $params["params"])
-            );
-        }
-
-        foreach($params["middleware"]["after"] as $middleware){
-            $localHandler->append($middleware);
+        //  ハンドラを実行してレスポンスを取得(レスポンスの指定があれば書き換え)
+        $response   = $handler->handle($request);
+        
+        if(isset($result[2]["response"])){
+            if($result[2]["response"] instanceof ResponseInterface){
+                $response   = $result[2]["response"];
+            }else{
+                $response   = $result[2]["response"]->createResponse();
+            }
         }
         
-        return $localHandler->handle($request);
+        return $this->createActionHandler(
+            $this->createActionMiddleware(
+                $result[2]["action"],
+                $result[1]
+            ),
+            $response,
+            $result[2]["middleware.before"],
+            $result[2]["middleware.after"]
+        )->handle($request);
     }
 
     //  Request Handler
@@ -256,8 +270,12 @@ class App implements MiddlewareInterface{
      * @return  $this
      */
     public function append(MiddlewareInterface $middleware){
-        $this->middleware[] = $middleware;
-
+        if($middleware === $this && !$this->handler->hasClass(self::class)
+            || $middleware !== $this
+        ){
+            $this->handler->append($middleware);
+        }
+        
         return $this;
     }
 
@@ -269,7 +287,9 @@ class App implements MiddlewareInterface{
      * @return  $this
      */
     public function addBeforeAction(MiddlewareInterface $middleware){
-        $this->beforeMiddleware[]   = $middleware;
+        $this->handler->insertBefore(self::class, $middleware);
+        
+        return $this;
     }
 
     /**
@@ -280,32 +300,88 @@ class App implements MiddlewareInterface{
      * @return  $this
      */
     public function addAfterAction(MiddlewareInterface $middleware){
-        $this->afterMiddleware[]    = $middleware;
-    }
-
-    /**
-     * ミドルウェアを実行するハンドラを作成する
-     *
-     * @return  RequestHandlerInterface
-     */
-    public function getHandler(ResponseInterface $response = null){
-        $handler    = new RequestHandler($response);
-        $find       = false;
+        $this->handler->insertAfter(self::class, $middleware);
         
-        foreach($this->middleware as $middleware){
-            if($middleware === $this){
-                $find   = true;
-            }
-            
+        return $this;
+    }
+    
+    /**
+     * アクション実行ハンドラを作成する
+     * 
+     * @param   ActionMiddleware    $action
+     * @param   ResponseInterface|null  $response
+     * @param   MidlewareInterface|MiddlewareInterface[]|null   $before
+     * @param   MidlewareInterface|MiddlewareInterface[]|null   $after
+     * 
+     * @return  RequestHandler
+     */
+    private function createActionHandler(
+        ActionMiddleware $action,
+        ResponseInterface $response = null,
+        $before = null,
+        $after = null
+    ){
+        $handler    = new RequestHandler($response);
+        
+        foreach($this->beforeMiddleware as $middleware){
             $handler->append($middleware);
         }
         
-        if(!$find){
-            $handler->append($this);
+        if($before !== null){
+            foreach((array)$before as $middleware){
+                $handler->append($middleware);
+            }
+        }
+        
+        $handler->append($action);
+        
+        if($after !== null){
+            foreach((array)$after as $middleware){
+                $handler->append($middleware);
+            }
+        }
+        
+        foreach($this->afterMiddleware as $middleware){
+            $handler->append($middleware);
         }
         
         return $handler;
     }
+    
+    /**
+     * アクション実行ミドルウェアを作成する
+     * 
+     * @param   callable|string $action
+     * @param   mixed[] $params
+     * 
+     * @return  ActionMiddleware
+     * 
+     * @throws \LogicException
+     */
+    private function createActionMiddleware($action, array $params = []){
+        if(is_callable($action)){
+            return new ActionMiddleware($action, $params);
+        }
+        
+        if(($pos = strpos($action, "@")) !== false){
+            $controller = substr($action, 0, $pos);
+            $method     = substr($action, $pos + 1);
+        }else{
+            $controller = $action;
+            $method     = "index";
+        }
+        
+        $object = $this->getController($controller);
+        
+        if($object === null){
+            throw new \LogicException;
+        }else if(!method_exists($object, $method)){
+            throw new \LogicException;
+        }
+        
+        return new ActionMiddleware($object, $method, $params);
+    }
+    
 
     /**
      * 指定名のコントローラーインスタンスを返す
@@ -314,7 +390,7 @@ class App implements MiddlewareInterface{
      * 
      * @return  Controller\Controller|null
      */
-    public function getController(string $name){
+    private function getController(string $name){
         $class  = Configure::getControllerNamespace()
             . strtr(ucwords(strtr($name, ["-" => " "])), [" " => ""])
             . "Controller";
@@ -335,7 +411,7 @@ class App implements MiddlewareInterface{
      * 
      * @return  Controller\ErrorControllerInterface
      */
-    public function getErrorController(){
+    private function getErrorController(){
         $class  = Configure::getErrorController();
         
         return new $class($this->container);
