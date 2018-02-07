@@ -153,6 +153,10 @@ final class App implements MiddlewareInterface{
                 $this->handler->append($this);
             }
             
+            if($response !== null){
+                $this->handler->setResponse($response);
+            }
+            
             return new Response($this->handler->handle($request));
         }catch(\Fratily\Http\Status\HttpStatus $e){
             $method = "http{$e->getStatus()}";
