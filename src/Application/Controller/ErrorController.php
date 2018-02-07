@@ -57,7 +57,7 @@ TPL;
             $type   = $t["type"] ?? "";
             $func   = $t["function"] ?? "unknown";
             $args   = implode(", ", array_map(function($v){
-                return \Fratily\Debug\Dumper::dumpSimple($v);
+                return \Fratily\Utility\Variable::dumpSimple($v);
             }, $t["args"] ?? []));
             $file   = $t["file"] ?? "unkcnown";
             $line   = $t["line"] ?? 0;
