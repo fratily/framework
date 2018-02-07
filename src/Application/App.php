@@ -310,7 +310,9 @@ final class App implements MiddlewareInterface{
         $before = null,
         $after = null
     ){
-        $handler    = new RequestHandler($response);
+        $handler    = new RequestHandler();
+        
+        $handler->setResponse($response);
         
         if($before !== null){
             foreach((array)$before as $middleware){
