@@ -219,7 +219,7 @@ final class App implements MiddlewareInterface{
         }
         
         //  ルートデータのバリデーション
-        if(self::validDispatchData($result[2])){
+        if(!self::validDispatchData($result[2])){
             throw new \UnexpectedValueException();
         }
         
