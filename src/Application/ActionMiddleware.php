@@ -13,11 +13,11 @@
  */
 namespace Fratily\Application;
 
-use Fratily\Http\Server\MiddlewareInterface;
-use Fratily\Http\Server\RequestHandlerInterface;
 use Fratily\Reflection\ReflectionCallable;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 /**
  *
