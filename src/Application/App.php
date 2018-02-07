@@ -244,8 +244,8 @@ final class App implements MiddlewareInterface{
                 $result[1]
             ),
             $response,
-            $result[2]["middleware.before"],
-            $result[2]["middleware.after"]
+            $result[2]["middleware.before"] ?? null,
+            $result[2]["middleware.after"] ?? null
         )->handle($request);
     }
 
