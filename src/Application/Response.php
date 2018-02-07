@@ -13,6 +13,7 @@
  */
 namespace Fratily\Application;
 
+use Fratily\Http\Message\Response\EmitterInterface;
 use Fratily\Http\Message\Response\Emitter;
 use Psr\Http\Message\ResponseInterface;
 
