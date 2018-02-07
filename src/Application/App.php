@@ -272,7 +272,7 @@ final class App implements MiddlewareInterface{
      * @return  $this
      */
     public function addBeforeAction(MiddlewareInterface $middleware){
-        $this->handler->insertBefore(self::class, $middleware);
+        $this->handler->insertBeforeObject($this, $middleware);
         
         return $this;
     }
@@ -285,7 +285,7 @@ final class App implements MiddlewareInterface{
      * @return  $this
      */
     public function addAfterAction(MiddlewareInterface $middleware){
-        $this->handler->insertAfter(self::class, $middleware);
+        $this->handler->insertAfterObject($this, $middleware);
         
         return $this;
     }
