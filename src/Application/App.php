@@ -26,9 +26,7 @@ use Psr\Http\Message\ResponseInterface;
 use Interop\Http\Factory\ResponseFactoryInterface;
 
 /**
- *
- *
- * @property-read   ContainerInterface  $container
+ * 
  */
 final class App implements MiddlewareInterface{
 
