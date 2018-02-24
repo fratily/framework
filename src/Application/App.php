@@ -108,54 +108,6 @@ final class App implements MiddlewareInterface{
     }
 
     /**
-     * ルーティング結果から取得したデータをバリデーションする
-     *
-     * @param   mixed[] $data
-     *
-     * @return  bool
-     */
-    private static function validDispatchData(array $data){
-        return self::validAction($data["action"] ?? null)
-            && self::validMiddleware($data["response"] ?? null)
-            && self::validMiddleware($data["middleware.before"] ?? null)
-            && self::validResponse($data["middleware.after"] ?? null);
-    }
-
-    /**
-     * アクションをバリデーションする
-     *
-     * 1文字以上の文字列、もしくはコーラブルな値を許容する
-     *
-     * @param   mixed   $action
-     *
-     * @return  bool
-     */
-    private static function validAction($action){
-        return is_callable($action) || is_string($action) && $action !== "";
-    }
-
-    /**
-     * ミドルウェアをバリデーションする
-     *
-     * 単一のミドルウェアインスタンス、もしくはミドルウェアのリストを許容する
-     *
-     * @param   mixed   $middlewares
-     *
-     * @return  bool
-     */
-    private static function validMiddleware($middlewares){
-        if($middlewares !== null){
-            foreach((array)$middlewares as $middleware){
-                if(!($middleware instanceof MiddlewareInterface)){
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
      * レスポンスをバリデーションする
      *
      * レスポンスインスタンス、もしくはレスポンスファクトリを許容する
