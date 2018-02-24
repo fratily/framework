@@ -108,21 +108,6 @@ final class App implements MiddlewareInterface{
     }
 
     /**
-     * レスポンスをバリデーションする
-     *
-     * レスポンスインスタンス、もしくはレスポンスファクトリを許容する
-     *
-     * @param   mixed   $response
-     *
-     * @return  bool
-     */
-    private static function validResponse($response){
-        return $response === null
-            || ($response instanceof ResponseInterface)
-            || ($response instanceof ResponseFactoryInterface);
-    }
-
-    /**
      * Constructor
      *
      * @param   ConteinerInterface  $container
