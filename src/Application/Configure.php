@@ -13,13 +13,8 @@
  */
 namespace Fratily\Application;
 
-use Fratily\Router\RouteCollector;
-use Psr\Container\ContainerInterface;
-
 /**
  *
- *
- * @property-read   ContainerInterface  $container
  */
 abstract class Configure{
 
@@ -152,70 +147,6 @@ abstract class Configure{
         $node[2]    = $option ?? (array_key_exists(2, $node) ? $node[2] : 0);
     }
 
-    /**
-     * DIコンテナを取得する
-     *
-     * @return  ContainerInterface
-     *
-     * @throws  Exception\ConfigureException
-     */
-    public static function getContainer(){
-        $key    = "app.container";
-        $c      = self::get($key);
-
-        if(!($c instanceof ContainerInterface)){
-            throw Exception\ConfigureException::unexpectedValue(
-                $key, ContainerInterface::class
-            );
-        }
-
-        return $c;
-    }
-
-    /**
-     * DIコンテナを登録する
-     *
-     * @param   ContainerInterface  $container
-     *
-     * @return  void
-     */
-    public static function setConteiner(ContainerInterface $container){
-        $key    = "app.container";
-
-        self::set($key, $container);
-    }
-
-    /**
-     * ルートコレクターを取得する
-     * 
-     * @return  RouteCollector
-     * 
-     * @throws  Exception\ConfigureException
-     */
-    public static function getRoutes(){
-        $key    = "app.routing.collector";
-        $c      = self::get($key);
-        
-        if(!($c instanceof RouteCollector)){
-            throw Exception\ConfigureException::unexpectedValue(
-                $key, RouteCollector::class
-            );
-        }
-        
-        return $c;
-    }
-    
-    /**
-     * ルートコレクターを登録する
-     * 
-     * @param   RouteCollector  $collector
-     */
-    public static function setRoutes(RouteCollector $collector){
-        $key    = "app.routing.collector";
-        
-        self::set($key, $collector);
-    }
-    
     /**
      * イベントを取得する
      *

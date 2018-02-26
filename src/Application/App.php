@@ -48,6 +48,11 @@ final class App implements MiddlewareInterface{
     private $container;
 
     /**
+     * @var ResponseFactoryInterface
+     */
+    private $responseFactory;
+
+    /**
      * @var RouteCollector
      */
     private $routes;
@@ -57,45 +62,44 @@ final class App implements MiddlewareInterface{
      */
     private $handler;
 
-    private static function normalizeRouteData(array $data){
-        $data["action"] = self::normalizeRouteAction(
-            $data["action"] ?? null
-        );
+    /**
+     * レスポンスファクトリの値を正しくする
+     *
+     * @param   ResponseFactoryInterface|string|null    $factory
+     *
+     * @return  ResponseFactoryInterface|string|null
+     */
+    private static function normalizeResponseFactory($factory){
+        static $implements  = [];
 
-        $data["response"]   = self::normalizeRouteResponse(
-            $data["response"] ?? null
-        );
+        if($factory instanceof ResponseFactoryInterface){
+            return $factory;
+        }else if(is_string($factory)){
+            if(class_exists($factory)){
+                if(!isset($implements[$factory])){
+                    $implements[$factory]   = (new \ReflectionClass($factory))
+                        ->implementsInterface(ResponseFactoryInterface::class);
+                }
 
-        $data["middleware.before"]  = self::normalizeRouteMiddleware(
-            $data["middleware.befoer"] ?? null
-        );
-
-        $data["middleware.after"]   = self::normalizeRouteMiddleware(
-            $data["middleware.after"] ?? null
-        );
-    }
-
-    private static function normalizeRouteAction($action){
-        if(is_callable($action)
-            || (is_string($action) && strpos($action, "@") > 0)
-        ){
-            return $action;
+                if($implements[$factory]){
+                    return $factory;
+                }
+            }else{
+                return $factory;
+            }
         }
 
         return null;
     }
 
-    private static function normalizeRouteResponse($response){
-        if($response instanceof ResponseInterface
-            || $response instanceof ResponseFactoryInterface
-        ){
-            return $response;
-        }
-
-        return null;
-    }
-
-    private static function normalizeRouteMiddleware($middlewares){
+    /**
+     * ミドルウェアリストを正しくする
+     *
+     * @param   MiddlewareInterface[]|MiddlewareInterface|null  $middlewares
+     *
+     * @return  MiddlewareInterface[]|null
+     */
+    private static function normalizeMiddlewares($middlewares){
         $return = [];
 
         foreach((array)$middlewares as $middleware){
@@ -111,14 +115,20 @@ final class App implements MiddlewareInterface{
      * Constructor
      *
      * @param   ConteinerInterface  $container
+     * @param   ResponseFactoryInterface    $responseFactory
      * @param   bool    $debug
      */
-    public function __construct(ContainerInterface $container, bool $debug){
-        $this->startedAt    = microtime(true);
-        $this->isDebug      = $debug;
-        $this->container    = $container;
-        $this->routes       = new RouteCollector();
-        $this->handler      = new RequestHandler();
+    public function __construct(
+        ContainerInterface $container,
+        ResponseFactoryInterface $responseFactory,
+        bool $debug = false
+    ){
+        $this->startedAt        = microtime(true);
+        $this->isDebug          = $debug;
+        $this->container        = $container;
+        $this->responseFactory  = $responseFactory;
+        $this->routes           = new RouteCollector();
+        $this->handler          = new RequestHandler($responseFactory);
     }
 
     /**
@@ -135,12 +145,16 @@ final class App implements MiddlewareInterface{
         ResponseInterface $response = null
     ): Response{
         try{
+            $result = $this->routes
+                ->createRouter($request->getMethod())
+                ->search($request->getUri()->getPath());
+
+            if($result[0] === Router::NOT_FOUND){
+                throw new \Fratily\Http\Status\NotFound();
+            }
+            
             if(!$this->handler->hasClass(self::class)){
                 $this->handler->append($this);
-            }
-
-            if($response !== null){
-                $this->handler->setResponse($response);
             }
 
             return new Response($this->handler->handle($request));
@@ -201,8 +215,6 @@ final class App implements MiddlewareInterface{
         if($result[0] === Router::NOT_FOUND){
             throw new \Fratily\Http\Status\NotFound();
         }
-
-        $data   = self::normalizeRouteData($result[2]);
 
         //  ハンドラを実行してレスポンスを取得(レスポンスの指定があれば書き換え)
         $response   = $handler->handle($request);
@@ -272,43 +284,6 @@ final class App implements MiddlewareInterface{
     }
 
     /**
-     * アクション実行ハンドラを作成する
-     *
-     * @param   ActionMiddleware    $action
-     * @param   ResponseInterface|null  $response
-     * @param   MidlewareInterface|MiddlewareInterface[]|null   $before
-     * @param   MidlewareInterface|MiddlewareInterface[]|null   $after
-     *
-     * @return  RequestHandler
-     */
-    private function createActionHandler(
-        ActionMiddleware $action,
-        ResponseInterface $response = null,
-        $before = null,
-        $after = null
-    ){
-        $handler    = new RequestHandler();
-
-        $handler->setResponse($response);
-
-        if($before !== null){
-            foreach((array)$before as $middleware){
-                $handler->append($middleware);
-            }
-        }
-
-        $handler->append($action);
-
-        if($after !== null){
-            foreach((array)$after as $middleware){
-                $handler->append($middleware);
-            }
-        }
-
-        return $handler;
-    }
-
-    /**
      * アクション実行ミドルウェアを作成する
      *
      * @param   callable|string $action
@@ -323,47 +298,140 @@ final class App implements MiddlewareInterface{
             return new ActionMiddleware($action, $params);
         }
 
-        if(($pos = strpos($action, "@")) !== false){
-            $controller = substr($action, 0, $pos);
-            $method     = substr($action, $pos + 1);
-        }else{
-            $controller = $action;
-            $method     = "index";
-        }
-
-        $object = $this->getController($controller);
-
-        if($object === null){
-            throw new \LogicException;
-        }else if(!method_exists($object, $method)){
-            throw new \LogicException;
-        }
-
-        return new ActionMiddleware($object, $method, $params);
+        return new ActionMiddleware(
+            new $action[0]($this->container), $action[1], $params
+        );
     }
 
+    //  Router
 
     /**
-     * 指定名のコントローラーインスタンスを返す
+     * ルートを追加する
      *
      * @param   string  $name
+     * @param   string  $path
+     * @param   callabl|string[]|string   $action
+     * @param   string  $methods
      *
-     * @return  Controller\Controller|null
+     * @return  void
+     *
+     * @throws  \InvalidArgumentException
      */
-    private function getController(string $name){
-        $class  = Configure::getControllerNamespace()
-            . strtr(ucwords(strtr($name, ["-" => " "])), [" " => ""])
-            . "Controller";
+    public function route(string $name, string $path, $action, array $options = []){
+        $data       = [];
+        $options    = $options + [
+            "allow" => null,
+            "middleware.before" => null,
+            "middleware.after"  => null,
+            "factory.response"  => null
+        ];
 
-        if(class_exists($class)){
-            $ref    = new \ReflectionClass($class);
+        //  Resolve action
+        if(is_callable($action)){
+            $data["action"] = $action;
+        }else{
+            $action = is_string($action) ? [$action, "index"] : $action;
 
-            if($ref->isSubclassOf(Controller\Controller::class)){
-                return new $class($this->container);
+            if(!is_array($action)){
+                throw new \InvalidArgumentException();
+            }else if(!isset($action[0]) || !isset($action[0])
+                || !is_string($action[0] || !is_string($action[1]))
+                || $action[0] === "" || $action[1] === ""
+            ){
+                throw new \InvalidArgumentException();
+            }else if(!Controller\Controller::isController($action[0])){
+                throw new \InvalidArgumentException();
             }
+
+            $data["action"] = [$action[0], $action[1]];
         }
 
-        return null;
+        $data["middleware.before"]  = self::normalizeMiddlewares(
+            $options["middleware.before"]
+        );
+        $data["middleware.after"]   = self::normalizeMiddlewares(
+            $options["middleware.after"]
+        );
+        $data["factory.response"]   = self::normalizeResponseFactory(
+            $options["factory.response"]
+        );
+
+        $this->routes->addRoute($name, $path, $options["allow"], $data);
+    }
+
+    /**
+     * GETメソッドを許容するルートを追加する
+     *
+     * @param   string  $name
+     * @param   string  $path
+     * @param   callabl|string[]|string   $action
+     *
+     * @return  void
+     *
+     * @throws  \InvalidArgumentException
+     */
+    public function get(string $name, string $path, $action){
+        $this->route($name, $path, $action, ["GET"]);
+    }
+
+    /**
+     * POSTメソッドを許容するルートを追加する
+     *
+     * @param   string  $name
+     * @param   string  $path
+     * @param   callabl|string[]|string   $action
+     *
+     * @return  void
+     *
+     * @throws  \InvalidArgumentException
+     */
+    public function post(string $name, string $path, $action){
+        $this->route($name, $path, $action, ["POST"]);
+    }
+
+    /**
+     * PUTメソッドを許容するルートを追加する
+     *
+     * @param   string  $name
+     * @param   string  $path
+     * @param   callabl|string[]|string   $action
+     *
+     * @return  void
+     *
+     * @throws  \InvalidArgumentException
+     */
+    public function put(string $name, string $path, $action){
+        $this->route($name, $path, $action, ["PUT"]);
+    }
+
+    /**
+     * PATCHメソッドを許容するルートを追加する
+     *
+     * @param   string  $name
+     * @param   string  $path
+     * @param   callabl|string[]|string   $action
+     *
+     * @return  void
+     *
+     * @throws  \InvalidArgumentException
+     */
+    public function patch(string $name, string $path, $action){
+        $this->route($name, $path, $action, ["PATCH"]);
+    }
+
+    /**
+     * DELETEメソッドを許容するルートを追加する
+     *
+     * @param   string  $name
+     * @param   string  $path
+     * @param   callabl|string[]|string   $action
+     *
+     * @return  void
+     *
+     * @throws  \InvalidArgumentException
+     */
+    public function delete(string $name, string $path, $action){
+        $this->route($name, $path, $action, ["DELETE"]);
     }
 
     /**
