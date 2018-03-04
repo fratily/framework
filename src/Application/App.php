@@ -151,9 +151,15 @@ final class App implements MiddlewareInterface{
                 throw new \Fratily\Http\Status\NotFound();
             }
             
-            if(!$this->handler->hasClass(self::class)){
-                $this->handler->append($this);
-            }
+            $this->constructHandler(
+                $this->createActionMiddleware(
+                    $result[2]["action"],
+                    $result[1]
+                ),
+                $result[2]["middleware.before"],
+                $result[2]["middleware.after"],
+                $result[2]["factory.response"]
+            );
 
             return new Response($this->handler->handle($request));
         }catch(\Throwable $e){
@@ -299,6 +305,45 @@ final class App implements MiddlewareInterface{
         return new ActionMiddleware(
             new $action[0]($this->container), $action[1], $params
         );
+    }
+    
+    /**
+     * リクエストハンドラをアクションミドルウェアを追加し再構成する
+     * 
+     * @param   MiddlewareInterface $action
+     * @param   MiddlewareInterface[]   $beforeMiddlewares  [optional]
+     * @param   MiddlewareInterface[]   $afterMiddlewares   [optional]
+     * @param   ResponseFactoryInterface    $factory    [optional]
+     * 
+     * @return  void
+     */
+    private function constructHandler(
+        MiddlewareInterface $action,
+        array $beforeMiddlewares = null,
+        array $afterMiddlewares = null,
+        ResponseFactoryInterface $factory = null
+    ){
+        if(!$this->handler->hasObject($this)){
+            $this->handler->append($this);
+        }
+        
+        $this->handler->replaceObject($this, $action);
+        
+        if($beforeMiddlewares !== null){
+            foreach($beforeMiddlewares as $middleware){
+                $this->handler->insertBeforeObject($action, $middleware);
+            }
+        }
+        
+        if($afterMiddlewares !== null){
+            foreach(array_reverse($afterMiddlewares) as $middleware){
+                $this->handler->insertAfterObject($action, $middleware);
+            }
+        }
+        
+        if($factory !== null){
+            $this->handler->setResponseFactory($factory);
+        }
     }
 
     //  Router
