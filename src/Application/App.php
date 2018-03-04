@@ -30,7 +30,6 @@ use Interop\Http\Factory\ResponseFactoryInterface;
  */
 final class App implements MiddlewareInterface{
 
-
     /**
      * @var float
      */
