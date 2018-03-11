@@ -180,6 +180,7 @@ final class App implements MiddlewareInterface{
             }
         }
 
+        //  ここからのアクション実行処理をどうにかして共通化
         $controller = $this->getErrorController();
         $method     = method_exists($controller, $method) ? $method : "status";
         $action     = new ReflectionCallable([$controller, $method]);
