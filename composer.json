@@ -28,6 +28,12 @@
         },
         "files": [
             "config/bootstrap.php"
+        ],
+        "exclude-from-classmap": [
+            "src/Tests/"
         ]
+    },
+    "scripts": {
+        "test": "phpunit"
     }
 }
