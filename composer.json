@@ -27,7 +27,7 @@
             "Fratily\\Framework\\": "src/"
         },
         "files": [
-            "config/bootstrap.php"
+            "src/bootstrap.php"
         ],
         "exclude-from-classmap": [
             "src/Tests/"
