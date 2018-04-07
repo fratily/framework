@@ -11,7 +11,7 @@
  * @license     MIT
  * @since       1.0.0
  */
-namespace Fratily\Application\Logger;
+namespace Fratily\Framework\Logger;
 
 use Fratily\Utility\Hash;
 use Psr\Log\LoggerInterface;
@@ -21,7 +21,7 @@ use Psr\Log\LogLevel;
  * Base logging class.
  */
 abstract class BaseLog implements LoggerInterface{
-    
+
     const LV2STR    = [
         LogLevel::EMERGENCY  => "emergency",
         LogLevel::ALERT      => "alert",
@@ -32,7 +32,7 @@ abstract class BaseLog implements LoggerInterface{
         LogLevel::INFO       => "info",
         LogLevel::DEBUG      => "debug"
     ];
-    
+
     /**
      * {@inheritdoc}
      */

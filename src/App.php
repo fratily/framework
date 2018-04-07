@@ -11,7 +11,7 @@
  * @license     MIT
  * @since       1.0.0
  */
-namespace Fratily\Application;
+namespace Fratily\Framework;
 
 use Fratily\Router\RouteCollector;
 use Fratily\Router\Router;
@@ -150,7 +150,7 @@ final class App implements MiddlewareInterface{
             if($result[0] === Router::NOT_FOUND){
                 throw new \Fratily\Http\Status\NotFound();
             }
-            
+
             $this->constructHandler(
                 $this->createActionMiddleware(
                     $result[2]["action"],
@@ -307,15 +307,15 @@ final class App implements MiddlewareInterface{
             new $action[0]($this->container), $action[1], $params
         );
     }
-    
+
     /**
      * リクエストハンドラをアクションミドルウェアを追加し再構成する
-     * 
+     *
      * @param   MiddlewareInterface $action
      * @param   MiddlewareInterface[]   $beforeMiddlewares  [optional]
      * @param   MiddlewareInterface[]   $afterMiddlewares   [optional]
      * @param   ResponseFactoryInterface    $factory    [optional]
-     * 
+     *
      * @return  void
      */
     private function constructHandler(
@@ -327,21 +327,21 @@ final class App implements MiddlewareInterface{
         if(!$this->handler->hasObject($this)){
             $this->handler->append($this);
         }
-        
+
         $this->handler->replaceObject($this, $action);
-        
+
         if($beforeMiddlewares !== null){
             foreach($beforeMiddlewares as $middleware){
                 $this->handler->insertBeforeObject($action, $middleware);
             }
         }
-        
+
         if($afterMiddlewares !== null){
             foreach(array_reverse($afterMiddlewares) as $middleware){
                 $this->handler->insertAfterObject($action, $middleware);
             }
         }
-        
+
         if($factory !== null){
             $this->handler->setResponseFactory($factory);
         }
@@ -371,16 +371,15 @@ final class App implements MiddlewareInterface{
         ];
 
         //  Resolve action
-        if(is_callable($action)){
+        if($action instanceof \Closure){
             $data["action"] = $action;
         }else{
             $action = is_string($action) ? [$action, "index"] : $action;
 
             if(!is_array($action)){
                 throw new \InvalidArgumentException();
-            }else if(!isset($action[0]) || !isset($action[0])
+            }else if(!isset($action[0]) || !isset($action[1])
                 || !is_string($action[0] || !is_string($action[1]))
-                || $action[0] === "" || $action[1] === ""
             ){
                 throw new \InvalidArgumentException();
             }else if(!Controller\Controller::isController($action[0])){

@@ -1,17 +1,17 @@
 <?php
 /**
  * FratilyPHP
- * 
+ *
  * Licensed under The MIT License
  * For full copyright and license information, please see the LICENSE
  * Redistributions of files must retain the above copyright notice.
- * 
+ *
  * @author      Kento Oka <kento.oka@kentoka.com>
  * @copyright   (c) Kento Oka
  * @license     MIT
  * @since       1.0.0
  */
-namespace Fratily\Application\Logger;
+namespace Fratily\Framework\Logger;
 
 use Psr\Log\LogLevel;
 
@@ -19,26 +19,26 @@ use Psr\Log\LogLevel;
  * Logging class to output to the specified file.
  */
 class Filelog extends BaseLog{
-    
+
     private $dir;
-    
+
     private $name;
-    
+
     private $ext;
-    
+
     private $rotate;
-    
+
     private $count;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param   string  $dir
      * @param   string  $name
      * @param   string  $ext
      * @param   int $rotate
      * @param   int $count
-     * 
+     *
      * @throws  \InvalidArgumentException
      */
     public function __construct(
@@ -61,20 +61,20 @@ class Filelog extends BaseLog{
         }else if($count < 0){
             throw new \InvalidArgumentException();
         }
-        
+
         $this->dir      = realpath($dir);
         $this->name     = $name;
         $this->ext      = $ext;
         $this->rotate   = $rotate;
         $this->count    = $count;
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function log($level, $message, array $context = []){
         $path   = $this->getFilePath($level);
-        
+
         if(is_string($path)){
             $output = static::createOutput($level, $message, $context);
 
@@ -83,12 +83,12 @@ class Filelog extends BaseLog{
             }
         }
     }
-    
+
     /**
      * ログファイルのパスを取得する
-     * 
+     *
      * @param   mixed   $level
-     * 
+     *
      * @return  string
      */
     protected function getFilePath($level){
@@ -112,22 +112,22 @@ class Filelog extends BaseLog{
         }else{
             $name   = $this->name;
         }
-        
-        
+
+
         return $this->dir . DS . $name
             . (isset($this->ext) ? ".{$this->ext}" : "");
     }
-    
+
     /**
      * ログファイルのローテーションを行う
-     * 
+     *
      * @param   string  $path
-     * 
+     *
      * @return  bool
      */
     protected function rotateFile(string $path): bool{
         clearstatcache(true, $path);
-        
+
         if(is_dir($path)){
             return false;
         }else if(is_file($path) && ($this->rotate <= filesize($path))){
@@ -143,9 +143,9 @@ class Filelog extends BaseLog{
                 }
             }
         }
-        
+
         return true;
     }
-    
-    
+
+
 }

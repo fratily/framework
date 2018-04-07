@@ -24,14 +24,10 @@
     },
     "autoload": {
         "psr-4": {
-            "Fratily\\": "src/",
-            "FratilyTest\\": "tests/"
+            "Fratily\\Framework\\": "src/"
         },
         "files": [
             "config/bootstrap.php"
         ]
-    },
-    "scripts": {
-        "test": "phpunit tests/"
     }
 }

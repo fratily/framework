@@ -11,13 +11,13 @@
  * @license     MIT
  * @since       1.0.0
  */
-namespace Fratily\Application;
+namespace Fratily\Framework;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
 /**
- * 
+ *
  */
 class Logger{
 
@@ -86,7 +86,7 @@ class Logger{
                 $logger = $logger($options);
             }
         }
-        
+
         if(!($logger instanceof LoggerInterface)){
             throw new \InvalidArgumentException(
                 ""

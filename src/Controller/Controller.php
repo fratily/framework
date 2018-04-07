@@ -11,7 +11,7 @@
  * @license     MIT
  * @since       1.0.0
  */
-namespace Fratily\Application\Controller;
+namespace Fratily\Framework\Controller;
 
 use Psr\Container\ContainerInterface;
 
