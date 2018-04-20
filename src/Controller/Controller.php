@@ -68,4 +68,8 @@ abstract class Controller{
     public function __isset($id){
         return $this->container->has($id);
     }
+
+    protected function render(string $tpl){
+
+    }
 }

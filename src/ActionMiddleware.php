@@ -14,6 +14,7 @@
 namespace Fratily\Framework;
 
 use Fratily\Reflection\ReflectionCallable;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -25,9 +26,9 @@ use Psr\Http\Server\MiddlewareInterface;
 class ActionMiddleware implements MiddlewareInterface{
 
     /**
-     * @var object|null
+     * @var ContainerInterface
      */
-    private $object;
+    private $container;
 
     /**
      * @var ReflectionCallable
@@ -40,38 +41,58 @@ class ActionMiddleware implements MiddlewareInterface{
     private $params;
 
     /**
+     * コントローラーのクラスメイとアクションメソッドからアクションミドルウェアを作成
      *
-     * @example new ActionMiddleware(function(){}, []);
-     * @example new ActionMiddleware(new Controller(), "index", []);
+     * @param   ContainerInterface  $container
+     * @param   string  $controller
+     * @param   string  $method
+     * @param   mixed[] $params
+     *
+     * @return  static
+     *
+     * @throws  \InvalidArgumentException
      */
-    public function __construct(...$args){
-        if(isset($args[0], $args[1])
-            && is_callable($args[0]) && is_array($args[1])
-        ){
-            //  action function, params
-            $this->action   = new ReflectionCallable($args[0]);
-            $this->params   = $args[1];
-        }else if(isset($args[0], $args[1], $args[2])
-            && ($args[0] instanceof Controller\Controller)
-            && is_string($args[1]) && is_array($args[2])
-        ){
-            //  controller object, action method name, params
-            if(!method_exists($args[0], $args[1])){
-                throw new \InvalidArgumentException();
-            }
-
-            $this->object   = $args[0];
-            $this->action   = new ReflectionCallable([$args[0], $args[1]]);
-            $this->params   = $args[2];
-
-            if(!$this->action->getReflection()->isPublic()
-                || $this->action->getReflection()->isStatic()
-            ){
-                throw new \InvalidArgumentException();
-            }
-        }else{
+    public static function getInstanceWithController(
+        ContainerInterface $container,
+        string $controller,
+        string $method,
+        array $params = []
+    ){
+        if(!class_exists($controller)){
             throw new \InvalidArgumentException();
         }
+
+        $controller = $container->has($controller)
+            ? $container->get($controller)
+            : new $controller($container)
+        ;
+
+        if(!($controller instanceof Controller\Controller)){
+            throw new \InvalidArgumentException();
+        }
+
+        if(!is_callable([$controller, $method])){
+            throw new \InvalidArgumentException();
+        }
+
+        return new static($container, [$controller, $method], $params);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param   ContainerInterface  $container
+     * @param   callable    $action
+     * @param   mixed[] $params
+     */
+    public function __construct(
+        ContainerInterface $container,
+        callable $action,
+        array $params = []
+    ){
+        $this->container    = $container;
+        $this->action       = $action;
+        $this->params       = $params;
     }
 
     /**
@@ -81,24 +102,50 @@ class ActionMiddleware implements MiddlewareInterface{
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface{
-        $contents   = $this->action->invokeMapedArgs(
-            $this->object,
-            [
-                "_request"   => $request,
-                "_params"    => $this->params
-            ] + $this->params
-        );
-
-        $response   = $handler->handle($request);
-
-        if($contents === null){
-            $contents   = "";
+        if(is_array($this->action) && $this->action[0] instanceof Controller\Controller){
+            $object = $this->action[0];
+        }else{
+            $object = null;
         }
 
-        if(is_scalar($contents) && $response->getBody()->isWritable()){
-            $response->getBody()->write($contents);
-        }else if($contents instanceof ResponseInterface){
-            $response   = $contents;
+        $reflection = new ReflectionCallable($this->action);
+        $args       = [];
+
+        foreach($reflection->getReflection()->getParameters() as $parameter){
+            $name   = $parameter->getName();
+
+            if($name === "_request"){
+                $args[] = $request;
+            }elseif($name === "_params"){
+                $args[] = $this->params;
+            }else if(array_key_exists($name, $this->params)){
+                $args[] = $this->params[$name];
+            }else if($this->container->has("action.params." . $name)){
+                $args[] = $this->container->get("action.params." . $name);
+            }else if($parameter->hasType() && class_exists($parameter->getType())
+                && $this->container->has($parameter->getType())
+            ){
+                $args[] = $this->container->get($parameter->getType());
+            }else if($parameter->isDefaultValueAvailable()){
+                $args[] = $parameter->getDefaultValue();
+            }else if($parameter->allowsNull()){
+                $args[] = null;
+            }else{
+                throw new \LogicException();
+            }
+        }
+
+        $response   = $handler->handle($request);
+        $_response  = $reflection->invokeArgs($object, $args);
+
+        if($_response instanceof ResponseInterface){
+            $response   = $_response;
+        }else if(is_scalar($_response) || $_response === null){
+            if(!$response->getBody()->isWritable()){
+                throw new \LogicException;
+            }
+
+            $response->getBody()->write($_response ?? "");
         }else{
             throw new \UnexpectedValueException;
         }
