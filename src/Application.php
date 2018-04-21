@@ -197,7 +197,7 @@ class Application{
      */
     private function createActionMiddleware($action, array $params = []){
         if(is_callable($action)){
-            return new ActionMiddleware($action, $params);
+            return new ActionMiddleware($this->container, $action, $params);
         }
 
         return ActionMiddleware::getInstanceWithController(
