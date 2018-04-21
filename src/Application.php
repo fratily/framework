@@ -161,7 +161,7 @@ class Application{
         $middlewares    = array_merge(
             $this->middlewares["before"],
             self::normalizeMiddlewares($result[2]["middleware.before"] ?? []),
-            $this->createActionMiddleware($action, $result[1]),
+            [$this->createActionMiddleware($action, $result[1])],
             self::normalizeMiddlewares($result[2]["middleware.before"] ?? []),
             $this->middlewares["after"]
         );
