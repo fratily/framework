@@ -14,7 +14,7 @@
         "psr/log": "^1.0",
         "fratily/router": "^0.3.0",
         "fratily/http-message": "^0.1.0",
-        "fratily/http-message-factory": "^0.1.0",
+        "fratily/http-message-factory": "^0.2.0",
         "fratily/http-server-middleware": "^0.2.0",
         "fratily/reflection": "^0.1.0",
         "fratily/utility": "^0.1.0",
