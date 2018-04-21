@@ -197,7 +197,13 @@ class Application{
      */
     private function createActionMiddleware($action, array $params = []){
         if(is_callable($action)){
-            return new ActionMiddleware($this->container, $action, $params);
+            if(is_array($action) && is_string($action[0])){
+                $reflection = new \ReflectionMethod($action[0], $action[1]);
+
+                if($reflection->isStatic()){
+                    return new ActionMiddleware($this->container, $action, $params);
+                }
+            }
         }
 
         return ActionMiddleware::getInstanceWithController(
