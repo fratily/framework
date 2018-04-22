@@ -203,6 +203,8 @@ class Application{
                 if($reflection->isStatic()){
                     return new ActionMiddleware($this->container, $action, $params);
                 }
+            }else{
+                return new ActionMiddleware($this->container, $action, $params);
             }
         }
 
