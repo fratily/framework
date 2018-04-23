@@ -14,6 +14,7 @@
 namespace Fratily\Framework;
 
 use Fratily\Router\{RouteCollector, Router};
+use Fratily\Http\Message\Status\NotFound;
 use Fratily\Http\Server\RequestHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -150,10 +151,7 @@ class Application{
             ->search($request->getUri()->getPath());
 
         if($result[0] === Router::NOT_FOUND){
-            $action = [
-                Controller\HttpStatusController::class,
-                "notFound",
-            ];
+            $action = function(){throw new NotFound();};
         }else{
             $action = $result[2]["action"];
         }
