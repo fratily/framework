@@ -103,7 +103,7 @@ class ActionMiddleware implements MiddlewareInterface{
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface{
-        if(is_array($this->action) && $this->action[0] instanceof Controller\Controller){
+        if(is_array($this->action) && $this->action[0] instanceof Controller){
             $object = $this->action[0];
         }else{
             $object = null;
