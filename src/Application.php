@@ -199,14 +199,14 @@ class Application{
                 $reflection = new \ReflectionMethod($action[0], $action[1]);
 
                 if($reflection->isStatic()){
-                    return new ActionMiddleware($this->container, $action, $params);
+                    return new Middleware\ActionMiddleware($this->container, $action, $params);
                 }
             }else{
-                return new ActionMiddleware($this->container, $action, $params);
+                return new Middleware\ActionMiddleware($this->container, $action, $params);
             }
         }
 
-        return ActionMiddleware::getInstanceWithController(
+        return Middleware\ActionMiddleware::getInstanceWithController(
             $this->container,
             $action[0],
             $action[1],
