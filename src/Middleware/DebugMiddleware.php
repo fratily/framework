@@ -81,9 +81,15 @@ class DebugMiddleware implements MiddlewareInterface{
                 }
             }
 
-            $context    = ["e" => $e];
             $twig       = new Environment(new FilesystemLoader($this->path));
             $response   = $this->factory->createResponse($status);
+
+            $context    = [
+                "error" => [
+                    "object"    => $e,
+                    "class"     => get_class($e),
+                ],
+            ];
 
             $response->getBody()->write($twig->render("error.twig", $context));
         }

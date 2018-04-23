@@ -1,1 +1,8 @@
-hello twig world.
+{% extends "base.twig" %}
+
+{% block title %}エラーページだよ{% endblock %}
+
+{% block content %}
+                <h2>{{error.class}}</h1>
+                <p>{{error.object.message}}</p>
+{% endblock %}
