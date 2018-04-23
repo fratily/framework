@@ -227,7 +227,7 @@ class Application{
      * @return  Middleware\DebugMiddleware
      */
     private function createDebugMiddleware(){
-        $path   = implode(DS, [__DIR__, "resource", "twig"]);
+        $path   = implode(DS, [__DIR__, "..", "resource", "twig"]);
 
         if(!$this->container->has(ResponseFactoryInterface::class)){
             throw new \LogicException();
