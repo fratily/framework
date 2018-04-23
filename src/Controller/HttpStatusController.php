@@ -13,16 +13,15 @@
  */
 namespace Fratily\Framework\Controller;
 
-use Fratily\Http\Message\Status\{
-    NotFound
-};
-
 /**
  *
  */
 class HttpStatusController extends Controller{
 
     public function notFound(){
-        throw new NotFound();
+        $response   = $this->response(404);
+        $body       = $this->render("error/404.twig");
+
+        return $response->getBody()->write($body);
     }
 }
