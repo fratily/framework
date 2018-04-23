@@ -13,6 +13,7 @@
  */
 namespace Fratily\Framework\Middleware;
 
+use Fratily\Framework\Controller\Controller;
 use Fratily\Reflection\ReflectionCallable;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -67,7 +68,7 @@ class ActionMiddleware implements MiddlewareInterface{
             : new $controller($container)
         ;
 
-        if(!($controller instanceof Controller\Controller)){
+        if(!($controller instanceof Controller)){
             throw new \InvalidArgumentException();
         }
 
