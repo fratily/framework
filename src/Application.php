@@ -156,7 +156,14 @@ class Application{
             $action = $result[2]["action"];
         }
 
+        $debugMiddleware    = [];
+
+        if($this->debug){
+            $debugMiddleware[]  = $this->createDebugMiddleware();
+        }
+
         $middlewares    = array_merge(
+            $debugMiddleware,
             $this->middlewares["before"],
             self::normalizeMiddlewares($result[2]["middleware.before"] ?? []),
             [$this->createActionMiddleware($action, $result[1])],
@@ -212,5 +219,20 @@ class Application{
             $action[1],
             $params
         );
+    }
+
+    /**
+     * デバッグ用ミドルウェアを作成する
+     *
+     * @return  Middleware\DebugMiddleware
+     */
+    private function createDebugMiddleware(){
+        $path   = implode(DS, [__DIR__, "resource", "twig"]);
+
+        if(!$this->container->has(ResponseFactoryInterface::class)){
+            throw new \LogicException();
+        }
+
+        return new Middleware\DebugMiddleware($path, $this->container->get(ResponseFactoryInterface::class));
     }
 }
