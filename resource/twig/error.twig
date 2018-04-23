@@ -5,4 +5,5 @@
 {% block content %}
                 <h2>{{error.class}}</h1>
                 <p>{{error.object.message}}</p>
+                <p>{{error.object.file}} {{error.object.line}}</p>
 {% endblock %}
