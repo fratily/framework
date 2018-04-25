@@ -41,31 +41,6 @@ abstract class Controller{
     private $render;
 
     /**
-     * クラスがコントローラーか確認する
-     *
-     * @param   string  $class
-     *
-     * @return  bool
-     */
-    public static function isController(string $class){
-        static $result  = [];
-
-        if(!isset($result[$class])){
-            $result[$class] = false;
-
-            if(class_exists($class)){
-                $ref    = new \ReflectionClass($class);
-
-                if($ref->implementsInterface(self::class)){
-                    $result[$class] = true;
-                }
-            }
-        }
-
-        return $result[$class];
-    }
-
-    /**
      * Constructor
      *
      * @param   ContainerInterface  $container
