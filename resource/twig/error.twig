@@ -3,8 +3,12 @@
 {% block title %}エラーページだよ{% endblock %}
 
 {% block content %}
-                <h2>{{error.class}}</h1>
-                <p>{{error.object.message}}</p>
-                <p>{{error.object.file}} {{error.object.line}}</p>
-                <pre>{{error.object.traceAsString}}</pre>
+<section>
+    <h2>{{error.class}}</h2>
+    <p>{{error.object.message}}</p>
+    <p>{{error.object.file}} {{error.object.line}}</p>
+    <div class="code">
+        <pre>{{error.object.traceAsString}}</pre>
+    </div>
+</section>
 {% endblock %}
