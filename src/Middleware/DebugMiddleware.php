@@ -88,8 +88,16 @@ class DebugMiddleware implements MiddlewareInterface{
                 "error" => [
                     "class"     => get_class($e),
                     "object"    => $e,
+                    "prev"      => [],
                 ],
             ];
+
+            while(($prev = $e->getPrevious()) !== null){
+                $context["error"]["prev"][] = [
+                    "class"     => get_class($prev),
+                    "object"    => $prev,
+                ];
+            }
 
             $response->getBody()->write($twig->render("error.twig", $context));
         }
