@@ -86,8 +86,8 @@ class DebugMiddleware implements MiddlewareInterface{
 
             $context    = [
                 "error" => [
-                    "object"    => $e,
                     "class"     => get_class($e),
+                    "object"    => $e,
                 ],
             ];
 
