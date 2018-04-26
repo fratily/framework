@@ -117,7 +117,7 @@ abstract class Controller{
     }
 
     /**
-     * テンプレとエンジンの結果を取得
+     * テンプレートエンジンのレンダリング結果を取得
      *
      * @param   string  $path
      * @param   mixed[] $context
