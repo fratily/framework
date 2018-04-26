@@ -20,7 +20,8 @@ use Twig\{
 };
 use Psr\Http\Message\{
     ServerRequestInterface,
-    ResponseInterface
+    ResponseInterface,
+    StreamInterface
 };
 use Psr\Http\Server\{
     RequestHandlerInterface,
@@ -68,11 +69,27 @@ class DebugMiddleware implements MiddlewareInterface{
     ): ResponseInterface{
         try{
             $response   = $handler->handle($request->withAttribute("fratily.debug", true));
+
+            $response->withBody($this->addDebugToolBar($response->getBody()));
         }catch(\Throwable $e){
             $response   = $this->createErrorPage($e);
         }
 
         return $response;
+    }
+
+    /**
+     * デバッグ用のツールバーを追加する
+     *
+     * レスポンスがhtml形式の場合のみ、
+     * bodyの閉じタグ直前にツールバーのブロック要素を追加する。
+     *
+     * @param   StreamInterface $body
+     *
+     * @return  StreamInterface
+     */
+    private function addDebugToolBar(StreamInterface $body){
+        return $body;
     }
 
     /**
