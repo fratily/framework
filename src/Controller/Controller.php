@@ -14,7 +14,11 @@
 namespace Fratily\Framework\Controller;
 
 use Fratily\Framework\Render\RenderInterface;
-use Psr\Container\ContainerInterface;
+use Fratily\Framework\Exception;
+use Psr\Container\{
+    ContainerInterface,
+    NotFoundExceptionInterface
+};
 use Psr\Http\Message\ResponseInterface;
 use Interop\Http\Factory\ResponseFactoryInterface;
 
@@ -63,9 +67,15 @@ abstract class Controller{
      * @param   string  $id
      *
      * @return  mixed
+     *
+     * @throws  Exception\ContainerNotFoundException
      */
     public function __get($id){
-        return $this->container->get($id);
+        try{
+            return $this->container->get($id);
+        }catch(NotFoundExceptionInterface $e){
+            throw new Exception\ContainerNotFoundException(ResponseFactoryInterface::class, 0, $e);
+        }
     }
 
     /**
@@ -88,15 +98,19 @@ abstract class Controller{
      *
      * @return  ResponseInterface
      *
-     * @throws  \LogicException
+     * @throws  Exception\ContainerNotFoundException
      */
     protected function response(int $code = 200){
         if($this->factory === null){
             if(!$this->container->has(ResponseFactoryInterface::class)){
-                throw new \LogicException;
+                throw new Exception\ContainerNotFoundException(ResponseFactoryInterface::class);
             }
 
-            $this->factory  = $this->container->get(ResponseFactoryInterface::class);
+            try{
+                $this->factory  = $this->container->get(ResponseFactoryInterface::class);
+            }catch(NotFoundExceptionInterface $e){
+                throw new Exception\ContainerNotFoundException(ResponseFactoryInterface::class, 0, $e);
+            }
         }
 
         return $this->factory->createResponse($code);
@@ -110,15 +124,19 @@ abstract class Controller{
      *
      * @return  string
      *
-     * @throws  \LogicException
+     * @throws  Exception\ContainerNotFoundException
      */
     protected function render(string $path, array $context = []){
         if($this->render === null){
             if(!$this->container->has(RenderInterface::class)){
-                throw new \LogicException;
+                throw new Exception\ContainerNotFoundException(RenderInterface::class);
             }
 
-            $this->render   = $this->container->get(RenderInterface::class);
+            try{
+                $this->render   = $this->container->get(RenderInterface::class);
+            }catch(NotFoundExceptionInterface $e){
+                throw new Exception\ContainerNotFoundException(RenderInterface::class, 0, $e);
+            }
         }
 
         return $this->render->render($path, $context);
