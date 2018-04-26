@@ -56,6 +56,8 @@ class ActionMiddleware implements MiddlewareInterface{
      * @return  static
      *
      * @throws  \InvalidArgumentException
+     *
+     * @todo    ここは修正の余地あり。仕様を確定させないといけない
      */
     public static function getInstanceWithController(
         ContainerInterface $container,
