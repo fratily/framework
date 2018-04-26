@@ -13,8 +13,10 @@
  */
 namespace Fratily\Framework\Controller;
 
-use Fratily\Framework\Render\RenderInterface;
-use Fratily\Framework\Exception;
+use Fratily\Framework\{
+    Render\RenderInterface,
+    Exception
+};
 use Psr\Container\{
     ContainerInterface,
     NotFoundExceptionInterface
