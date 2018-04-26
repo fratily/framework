@@ -69,38 +69,51 @@ class DebugMiddleware implements MiddlewareInterface{
         try{
             $response   = $handler->handle($request->withAttribute("fratily.debug", true));
         }catch(\Throwable $e){
-            $status = 500;
-            $phrase = HttpStatus::PHRASES[$status] ?? "Undefine";
-
-            if($e instanceof HttpStatus){
-                $status = $e->getStatusCode();
-                $phrase = $e->getStatusPhrase();
-
-                if($e instanceof \Fratily\Http\Message\Status\MethodNotAllowed){
-                    $allow  = $e->getAllowed();
-                }
-            }
-
-            $twig       = new Environment(new FilesystemLoader($this->path));
-            $response   = $this->factory->createResponse($status);
-
-            $context    = [
-                "error" => [
-                    "class"     => get_class($e),
-                    "object"    => $e,
-                    "prev"      => [],
-                ],
-            ];
-
-            while(($prev = $e->getPrevious()) !== null){
-                $context["error"]["prev"][] = [
-                    "class"     => get_class($prev),
-                    "object"    => $prev,
-                ];
-            }
-
-            $response->getBody()->write($twig->render("error.twig", $context));
+            $response   = $this->createErrorPage($e);
         }
+
+        return $response;
+    }
+
+    /**
+     * エラーページ描画用のレスポンスインスタンスを生成する
+     *
+     * @param   \Throwable  $e
+     *
+     * @return  ResponseInterface
+     */
+    private function createErrorPage(\Throwable $e){
+        $status = 500;
+        $phrase = HttpStatus::PHRASES[$status] ?? "Undefine";
+
+        if($e instanceof HttpStatus){
+            $status = $e->getStatusCode();
+            $phrase = $e->getStatusPhrase();
+
+            if($e instanceof \Fratily\Http\Message\Status\MethodNotAllowed){
+                $allow  = $e->getAllowed();
+            }
+        }
+
+        $twig       = new Environment(new FilesystemLoader($this->path));
+        $response   = $this->factory->createResponse($status);
+
+        $context    = [
+            "error" => [
+                "class"     => get_class($e),
+                "object"    => $e,
+                "prev"      => [],
+            ],
+        ];
+
+        while(($prev = $e->getPrevious()) !== null){
+            $context["error"]["prev"][] = [
+                "class"     => get_class($prev),
+                "object"    => $prev,
+            ];
+        }
+
+        $response->getBody()->write($twig->render("error.twig", $context));
 
         return $response;
     }
