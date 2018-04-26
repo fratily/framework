@@ -46,7 +46,7 @@ class ActionMiddleware implements MiddlewareInterface{
     private $params;
 
     /**
-     * コントローラーのクラスメイとアクションメソッドからアクションミドルウェアを作成
+     * コントローラーのクラス名とアクションメソッド名からアクションミドルウェアを作成
      *
      * @param   ContainerInterface  $container
      * @param   string  $controller
