@@ -16,10 +16,14 @@ namespace Fratily\Framework\Middleware;
 use Fratily\Framework\Controller\Controller;
 use Fratily\Reflection\ReflectionCallable;
 use Psr\Container\ContainerInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Message\{
+    ServerRequestInterface,
+    ResponseInterface
+};
+use Psr\Http\Server\{
+    RequestHandlerInterface,
+    MiddlewareInterface
+};
 
 /**
  *
