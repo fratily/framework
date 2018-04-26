@@ -15,7 +15,7 @@ namespace Fratily\Framework\Controller;
 
 use Fratily\Framework\{
     Render\RenderInterface,
-    Exception
+    Exception\ContainerNotFoundException
 };
 use Psr\Container\{
     ContainerInterface,
@@ -70,13 +70,13 @@ abstract class Controller{
      *
      * @return  mixed
      *
-     * @throws  Exception\ContainerNotFoundException
+     * @throws  ContainerNotFoundException
      */
     public function __get($id){
         try{
             return $this->container->get($id);
         }catch(NotFoundExceptionInterface $e){
-            throw new Exception\ContainerNotFoundException(ResponseFactoryInterface::class, 0, $e);
+            throw new ContainerNotFoundException(ResponseFactoryInterface::class, 0, $e);
         }
     }
 
@@ -100,18 +100,18 @@ abstract class Controller{
      *
      * @return  ResponseInterface
      *
-     * @throws  Exception\ContainerNotFoundException
+     * @throws  ContainerNotFoundException
      */
     protected function response(int $code = 200){
         if($this->factory === null){
             if(!$this->container->has(ResponseFactoryInterface::class)){
-                throw new Exception\ContainerNotFoundException(ResponseFactoryInterface::class);
+                throw new ContainerNotFoundException(ResponseFactoryInterface::class);
             }
 
             try{
                 $this->factory  = $this->container->get(ResponseFactoryInterface::class);
             }catch(NotFoundExceptionInterface $e){
-                throw new Exception\ContainerNotFoundException(ResponseFactoryInterface::class, 0, $e);
+                throw new ContainerNotFoundException(ResponseFactoryInterface::class, 0, $e);
             }
         }
 
@@ -126,18 +126,18 @@ abstract class Controller{
      *
      * @return  string
      *
-     * @throws  Exception\ContainerNotFoundException
+     * @throws  ContainerNotFoundException
      */
     protected function render(string $path, array $context = []){
         if($this->render === null){
             if(!$this->container->has(RenderInterface::class)){
-                throw new Exception\ContainerNotFoundException(RenderInterface::class);
+                throw new ContainerNotFoundException(RenderInterface::class);
             }
 
             try{
                 $this->render   = $this->container->get(RenderInterface::class);
             }catch(NotFoundExceptionInterface $e){
-                throw new Exception\ContainerNotFoundException(RenderInterface::class, 0, $e);
+                throw new ContainerNotFoundException(RenderInterface::class, 0, $e);
             }
         }
 
