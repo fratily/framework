@@ -22,7 +22,7 @@ use Psr\Http\{
     Server\MiddlewareInterface,
     Server\RequestHandlerInterface
 };
-use \Interop\Http\Factory\ResponseFactoryInterface;
+use Interop\Http\Factory\ResponseFactoryInterface;
 
 /**
  *
