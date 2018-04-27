@@ -17,10 +17,10 @@ use Fratily\Router\{RouteCollector, Router};
 use Fratily\Http\Message\Status\NotFound;
 use Fratily\Http\Server\RequestHandler;
 use Psr\Container\ContainerInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\{
-    MiddlewareInterface,
-    RequestHandlerInterface
+use Psr\Http\{
+    Message\ServerRequestInterface,
+    Server\MiddlewareInterface,
+    Server\RequestHandlerInterface
 };
 use \Interop\Http\Factory\ResponseFactoryInterface;
 
