@@ -19,6 +19,10 @@ if(!defined("DS")){
     define("DS", DIRECTORY_SEPARATOR);
 }
 
+if(!defined("FRATILY_FW_ROOT")){
+    define("FRATILY_FW_ROOT", realpath(__DIR__ . "/.."));
+}
+
 if(!function_exists("getComposerClassLoader")){
     /**
      * composerのクラスローダーを取得する

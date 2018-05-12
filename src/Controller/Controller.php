@@ -23,6 +23,7 @@ use Psr\Container\{
 };
 use Psr\Http\Message\ResponseInterface;
 use Interop\Http\Factory\ResponseFactoryInterface;
+use Twig\Environment;
 
 /**
  *
@@ -30,19 +31,12 @@ use Interop\Http\Factory\ResponseFactoryInterface;
 abstract class Controller{
 
     /**
-     * DIコンテナ
-     *
-     * @var ContainerInterface
-     */
-    private $container;
-
-    /**
-     * @var ResponseFactoryInterface|null
+     * @var ResponseFactoryInterface
      */
     private $factory;
 
     /**
-     * @var RenderInterface|null
+     * @var Environment
      */
     private $render;
 
@@ -52,45 +46,11 @@ abstract class Controller{
      * @param   ContainerInterface  $container
      */
     public function __construct(
-        ContainerInterface $container,
-        ResponseFactoryInterface $factory = null,
-        RenderInterface $render = null
+        ResponseFactoryInterface $factory,
+        Environment $twig
     ){
-        $this->container    = $container;
-        $this->factory      = $factory;
-        $this->render       = $render;
-    }
-
-    /**
-     * Undefine paremater access (get)
-     *
-     * DIコンテナから取得してくる
-     *
-     * @param   string  $id
-     *
-     * @return  mixed
-     *
-     * @throws  ContainerNotFoundException
-     */
-    public function __get($id){
-        try{
-            return $this->container->get($id);
-        }catch(NotFoundExceptionInterface $e){
-            throw new ContainerNotFoundException(ResponseFactoryInterface::class, 0, $e);
-        }
-    }
-
-    /**
-     * Undefine parameter access (has)
-     *
-     * DIコンテナに確認する
-     *
-     * @param   string  $id
-     *
-     * @return  bool
-     */
-    public function __isset($id){
-        return $this->container->has($id);
+        $this->factory  = $factory;
+        $this->render   = $render;
     }
 
     /**
@@ -103,44 +63,20 @@ abstract class Controller{
      * @throws  ContainerNotFoundException
      */
     protected function response(int $code = 200){
-        if($this->factory === null){
-            if(!$this->container->has(ResponseFactoryInterface::class)){
-                throw new ContainerNotFoundException(ResponseFactoryInterface::class);
-            }
-
-            try{
-                $this->factory  = $this->container->get(ResponseFactoryInterface::class);
-            }catch(NotFoundExceptionInterface $e){
-                throw new ContainerNotFoundException(ResponseFactoryInterface::class, 0, $e);
-            }
-        }
-
         return $this->factory->createResponse($code);
     }
 
     /**
      * テンプレートエンジンのレンダリング結果を取得
      *
-     * @param   string  $path
+     * @param   string  $name
      * @param   mixed[] $context
      *
      * @return  string
      *
      * @throws  ContainerNotFoundException
      */
-    protected function render(string $path, array $context = []){
-        if($this->render === null){
-            if(!$this->container->has(RenderInterface::class)){
-                throw new ContainerNotFoundException(RenderInterface::class);
-            }
-
-            try{
-                $this->render   = $this->container->get(RenderInterface::class);
-            }catch(NotFoundExceptionInterface $e){
-                throw new ContainerNotFoundException(RenderInterface::class, 0, $e);
-            }
-        }
-
-        return $this->render->render($path, $context);
+    protected function render(string $name, array $context = []){
+        return $this->render->render($name, $context);
     }
 }
