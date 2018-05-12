@@ -11,35 +11,30 @@
  * @license     MIT
  * @since       1.0.0
  */
-namespace Fratily\Framework\ContainerConfig;
+namespace Fratily\Framework\Container;
 
+use Fratily\Framework\Application;
 use Fratily\Container\{
     Container,
     ContainerConfig
-};
-use \Twig\{
-    Environment,
-    Loader\FilesystemLoader
 };
 
 /**
  *
  */
-class CoreConfig extends ContainerConfig{
+class AppConfig extends ContainerConfig{
 
     /**
      * {@inheritdoc}
      */
     public function define(Container $container){
-        $container->set(
-            "core.twig",
-            $container->lazyNew(Environment::class, [
-                $container->lazyNew(FilesystemLoader::class, [
-                    $container->lazyValue("core.twig.views")
-                ]),
+        $container->value("app.debug", false);
+
+        $container->set("app.application", $container->lazyNew(
+            Application::class,
+            [
+                "debug" => $container->lazyValue("app.debug")
             ]
         ));
-
-        $container->value("core.twig.views", FRATILY_FW_ROOT . DS . "resource" . DS .  "views");
     }
 }

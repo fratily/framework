@@ -14,6 +14,7 @@
 namespace Fratily\Framework;
 
 use Fratily\Router\{RouteCollector, Router};
+use Fratily\Container\ContainerFactory;
 use Fratily\Http\Message\Status\NotFound;
 use Fratily\Http\Server\RequestHandler;
 use Psr\Container\ContainerInterface;
@@ -53,6 +54,24 @@ class Application{
         "before"    => [],
         "after"     => [],
     ];
+
+    /**
+     * アプリケーションインスタンスを生成する
+     *
+     * @param   array   $containerConfig
+     *
+     * @return  static
+     */
+    public static function create(array $containerConfig = []){
+        $containerConfig    = array_merge([
+            Container\CoreConfig::class,
+            Container\AppConfig::class,
+        ], $containerConfig);
+
+        return (new ContainerFactory())->createWithConfig($containerConfig,true)
+            ->get("app.application")
+        ;
+    }
 
     /**
      * ミドルウェアリストを正しくする
