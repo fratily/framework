@@ -11,7 +11,7 @@
  * @license     MIT
  * @since       1.0.0
  */
-namespace Fratily\Framework\Tests;
+namespace Fratily\Tests\Framework;
 
 use Fratily\Framework\Configure;
 
