@@ -14,6 +14,7 @@
 namespace Fratily\Framework\Container;
 
 use Fratily\Framework\Application;
+use Fratily\Router\RouteCollector;
 use Fratily\Container\{
     Container,
     ContainerConfig
@@ -30,11 +31,23 @@ class AppConfig extends ContainerConfig{
     public function define(Container $container){
         $container->value("app.debug", false);
 
+        $container->set("app.routes", $container->lazyNew(RouteCollector::class));
+
         $container->set("app.application", $container->lazyNew(
             Application::class,
             [
-                "debug" => $container->lazyValue("app.debug")
+                "routes"    => $container->lazyGet("app.routes"),
+                "debug"     => $container->lazyValue("app.debug")
             ]
         ));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function modify(Container $container){
+        $app    = $container->get("app.application");
+
+        // ミドルウェアを追加する
     }
 }
