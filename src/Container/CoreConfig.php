@@ -36,16 +36,16 @@ class CoreConfig extends ContainerConfig{
         $container->type(ResponseFactoryInterface::class, $container->lazyNew(ResponseFactory::class));
 
         // Twig
-        $container->value("core.twig.views", realpath(__DIR__ . "/../../recource/views"));
-
-        $container->set("core.twig.loader", $container->lazyNew(
-            \Twig\Loader\FilesystemLoader::class,
-            [$container->lazyValue("core.twig.views")]
-        ));
-
         $container->set("core.twig", $container->lazyNew(
             \Twig\Environment::class,
-            [$container->lazyGet("core.twig.loader")]
+            [
+                $container->lazyNew(
+                    \Twig\Loader\FilesystemLoader::class,
+                    [
+                        __DIR__ . "/../../recource/views"
+                    ]
+                )
+            ]
         ));
     }
 }
