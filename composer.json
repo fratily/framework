@@ -22,9 +22,6 @@
         "fratily/container": "^0.1.1",
         "twig/twig": "^2.0"
     },
-    "require-dev": {
-        "phpunit/phpunit": "^6.0"
-    },
     "autoload": {
         "psr-4": {
             "Fratily\\Framework\\": "src/"
@@ -32,6 +29,9 @@
         "files": [
             "src/bootstrap.php"
         ]
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.0"
     },
     "autoload-dev": {
         "psr-4": {
