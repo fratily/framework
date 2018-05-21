@@ -14,12 +14,11 @@
 namespace Fratily\Framework\Container;
 
 use Fratily\Router\RouteCollector;
-use Fratily\Http\Factory\ResponseFactory;
-use Fratily\Container\{
-    Container,
-    ContainerConfig
-};
+use Fratily\Container\Container;
+use Fratily\Container\ContainerConfig;
 use Psr\Container\ContainerInterface;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\SimpleCache\CacheInterface;
 use Interop\Http\Factory\ResponseFactoryInterface;
 
 /**
@@ -31,9 +30,12 @@ class CoreConfig extends ContainerConfig{
      * {@inheritdoc}
      */
     public function define(Container $container){
+        // Constructor Injection by type name
         $container->type(ContainerInterface::class, $container);
-        $container->type(RouteCollector::class, $container->lazyNew(RouteCollector::class));
-        $container->type(ResponseFactoryInterface::class, $container->lazyNew(ResponseFactory::class));
+        $container->type(RouteCollector::class, $container->lazyGet("app.routes"));
+        $container->type(ResponseFactoryInterface::class, $container->lazyGet("app.factory.response"));
+        $container->type(CacheItemPoolInterface::class, $container->lazyGet("app.cache"));
+        $container->type(CacheInterface::class, $container->lazyGet("app.simplecache"));
 
         // Twig
         $container->set("core.twig", $container->lazyNew(
@@ -42,7 +44,7 @@ class CoreConfig extends ContainerConfig{
                 $container->lazyNew(
                     \Twig\Loader\FilesystemLoader::class,
                     [
-                        __DIR__ . "/../../recource/views"
+                        FRATILY_FW_ROOT . "/recource/views"
                     ]
                 )
             ]

@@ -15,10 +15,11 @@ namespace Fratily\Framework\Container;
 
 use Fratily\Framework\Application;
 use Fratily\Router\RouteCollector;
-use Fratily\Container\{
-    Container,
-    ContainerConfig
-};
+use Fratily\Http\Factory\ResponseFactory;
+use Fratily\Container\Container;
+use Fratily\Container\ContainerConfig;
+use Fratily\Cache\SimpleCache;
+use Psr\Cache\CacheItemPoolInterface;
 
 /**
  *
@@ -26,27 +27,50 @@ use Fratily\Container\{
 class AppConfig extends ContainerConfig{
 
     /**
+     * @var CacheItemPoolInterface
+     */
+    private $cache;
+
+    /**
+     * @var bool
+     */
+    private $debug;
+
+    /**
+     * Constructor
+     *
+     * @param   CacheItemPoolInterface  $cache
+     * @param   bool    $debug
+     */
+    public function __construct(CacheItemPoolInterface $cache, bool $debug){
+        $this->cache    = $cache;
+        $this->debug    = $debug;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function define(Container $container){
-        $container->value("app.debug", false);
-
-        $container->set("app.routes", $container->lazyNew(RouteCollector::class));
-
-        $container->set("app.application", $container->lazyNew(
+        $container->set("app", $container->lazyNew(
             Application::class,
             [
-                "routes"    => $container->lazyGet("app.routes"),
                 "debug"     => $container->lazyValue("app.debug")
             ]
         ));
+
+        $container->set("app.cache", $this->cache);
+        $container->set("app.simplecache", $container->lazyNew(SimpleCache::class));
+        $container->set("app.routes", $container->lazyNew(RouteCollector::class));
+        $container->set("app.factory.response", $container->lazyNew(ResponseFactory::class));
+
+        $container->value("app.debug", $this->debug);
     }
 
     /**
      * {@inheritdoc}
      */
     public function modify(Container $container){
-        $app    = $container->get("app.application");
+        $app    = $container->get("app");
 
         // ミドルウェアを追加する
     }

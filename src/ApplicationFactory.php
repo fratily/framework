@@ -14,39 +14,69 @@
 namespace Fratily\Framework;
 
 use Fratily\Container\ContainerFactory;
+use Psr\Container\ContainerInterface;
+use Psr\Cache\CacheItemPoolInterface;
 
 /**
  *
  */
 class ApplicationFactory{
 
-    /**
-     * @var string[]
-     */
-    private $containerConfig;
+    const CONTAINER_CACHE_KEY       = "fratily.app.container";
+    const DEBUG_CONTAINER_CACHE_KEY = "fratily.app.container.debug";
 
-    public function __construct(array $containerConfig = []){
-        $this->containerConfig  = array_merge([
-            Container\CoreConfig::class,
-            Container\AppConfig::class,
-        ], $containerConfig);
+    /**
+     * @var CacheItemPoolInterface
+     */
+    private $cache;
+
+    /**
+     * Constructor
+     *
+     * @param   CacheItemPoolInterface $cache
+     */
+    public function __construct(CacheItemPoolInterface $cache){
+        $this->cache    = $cache;
     }
 
     /**
      * アプリケーションインスタンスを生成する
      *
+     * @param   mixed[] $containerConfig
+     * @param   bool    $debug
+     * @param   bool    $containerCache
+     *
      * @return  Application
      */
-    public function create(array $containerConfig = []){
-        $containerConfig    = array_merge([
-            Container\CoreConfig::class,
-            Container\AppConfig::class,
-        ], $containerConfig);
+    public function create(array $containerConfig = [], bool $debug = false, bool $containerCache = true){
+        $cacheKey   = $debug ? self::DEBUG_CONTAINER_CACHE_KEY : self::CONTAINER_CACHE_KEY;
+        $container  = null;
+        $cacheItem  = $this->cache->getItem($cacheKey);
 
-        $app    = (new ContainerFactory())
-            ->createWithConfig($containerConfig,true)
-            ->get("app.application")
-        ;
+        if($containerCache && $cacheItem->isHit()){
+            $container  = $cacheItem->get();
+        }
+
+        if(!($container instanceof ContainerInterface)){
+            $containerConfig    = array_merge([
+                new Container\CoreConfig(),
+                new Container\AppConfig($this->cache, $debug),
+            ], $containerConfig);
+
+            $container  = (new ContainerFactory())
+                ->createWithConfig($containerConfig, true)
+            ;
+
+            $cacheItem->set($container);
+
+            $this->cache->save($cacheItem);
+        }
+
+        $app    = $container->get("app");
+
+        if(!($app instanceof Application)){
+            throw new \LogicException;
+        }
 
         return $app;
     }
