@@ -20,6 +20,7 @@ use Twig\Environment;
 use Psr\Container\ContainerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\SimpleCache\CacheInterface;
+use Psr\Log\LoggerInterface;
 use Interop\Http\Factory\ResponseFactoryInterface;
 
 /**
@@ -37,6 +38,7 @@ class CoreConfig extends ContainerConfig{
         $container->type(ResponseFactoryInterface::class, $container->lazyGet("app.factory.response"));
         $container->type(CacheItemPoolInterface::class, $container->lazyGet("app.cache"));
         $container->type(CacheInterface::class, $container->lazyGet("app.simplecache"));
+        $container->type(LoggerInterface::class, $container->lazyGet("app.log"));
         $container->type(Environment::class, $container->lazyGet("app.twig"));
 
         // Twig
