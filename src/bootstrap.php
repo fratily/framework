@@ -20,6 +20,13 @@ if(!defined("DS")){
 }
 
 if(!defined("FRATILY_FW_ROOT")){
+    /**
+     * fratily/frameworkのルートパス
+     *
+     * vendor/fratily/frameworkを指すことになるはず。
+     *
+     * @see Fratily\Framework\Container\CoreConfig
+     */
     define("FRATILY_FW_ROOT", realpath(__DIR__ . "/.."));
 }
 
