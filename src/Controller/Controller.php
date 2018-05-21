@@ -13,14 +13,6 @@
  */
 namespace Fratily\Framework\Controller;
 
-use Fratily\Framework\{
-    Render\RenderInterface,
-    Exception\ContainerNotFoundException
-};
-use Psr\Container\{
-    ContainerInterface,
-    NotFoundExceptionInterface
-};
 use Psr\Http\Message\ResponseInterface;
 use Interop\Http\Factory\ResponseFactoryInterface;
 use Twig\Environment;
@@ -38,7 +30,7 @@ abstract class Controller{
     /**
      * @var Environment
      */
-    private $render;
+    private $twig;
 
     /**
      * Constructor
@@ -50,7 +42,7 @@ abstract class Controller{
         Environment $twig
     ){
         $this->factory  = $factory;
-        $this->render   = $render;
+        $this->twig     = $twig;
     }
 
     /**
@@ -77,6 +69,6 @@ abstract class Controller{
      * @throws  ContainerNotFoundException
      */
     protected function render(string $name, array $context = []){
-        return $this->render->render($name, $context);
+        return $this->twig->render($name, $context);
     }
 }
