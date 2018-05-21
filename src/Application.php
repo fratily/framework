@@ -56,24 +56,6 @@ class Application{
     ];
 
     /**
-     * アプリケーションインスタンスを生成する
-     *
-     * @param   array   $containerConfig
-     *
-     * @return  static
-     */
-    public static function create(array $containerConfig = []){
-        $containerConfig    = array_merge([
-            Container\CoreConfig::class,
-            Container\AppConfig::class,
-        ], $containerConfig);
-
-        return (new ContainerFactory())->createWithConfig($containerConfig,true)
-            ->get("app.application")
-        ;
-    }
-
-    /**
      * ミドルウェアリストを正しくする
      *
      * @param   MiddlewareInterface[]|MiddlewareInterface|null  $middlewares
