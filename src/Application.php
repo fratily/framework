@@ -13,11 +13,11 @@
  */
 namespace Fratily\Framework;
 
+use Fratily\Container\Container;
 use Fratily\Router\RouteCollector;
 use Fratily\Router\Router;
 use Fratily\Http\Message\Status\NotFound;
 use Fratily\Http\Server\RequestHandler;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -36,7 +36,7 @@ class Application{
     private $debug;
 
     /**
-     * @var ContainerInterface
+     * @var Container
      */
     private $container;
 
@@ -78,7 +78,7 @@ class Application{
      * @param   ContainerInterface  $container
      * @param   RouteCollector  $routes
      */
-    public function __construct(ContainerInterface $container, RouteCollector $routes, bool $debug = false){
+    public function __construct(Container $container, RouteCollector $routes, bool $debug = false){
         $this->startedAt    = time();
         $this->debug        = $debug;
         $this->container    = $container;

@@ -33,6 +33,7 @@ class CoreConfig extends ContainerConfig{
      */
     public function define(Container $container){
         // Constructor Injection by type name
+        $container->type(Container::class, $container);
         $container->type(ContainerInterface::class, $container);
         $container->type(RouteCollector::class, $container->lazyGet("app.routes"));
         $container->type(ResponseFactoryInterface::class, $container->lazyGet("app.factory.response"));
