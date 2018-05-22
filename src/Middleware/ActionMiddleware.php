@@ -14,16 +14,13 @@
 namespace Fratily\Framework\Middleware;
 
 use Fratily\Framework\Controller\Controller;
+use Fratily\Container\Container;
 use Fratily\Reflection\ReflectionCallable;
 use Psr\Container\ContainerInterface;
-use Psr\Http\Message\{
-    ServerRequestInterface,
-    ResponseInterface
-};
-use Psr\Http\Server\{
-    RequestHandlerInterface,
-    MiddlewareInterface
-};
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 /**
  *
@@ -31,7 +28,7 @@ use Psr\Http\Server\{
 class ActionMiddleware implements MiddlewareInterface{
 
     /**
-     * @var ContainerInterface
+     * @var Container
      */
     private $container;
 
@@ -88,12 +85,12 @@ class ActionMiddleware implements MiddlewareInterface{
     /**
      * Constructor
      *
-     * @param   ContainerInterface  $container
+     * @param   Container   $container
      * @param   callable    $action
      * @param   mixed[] $params
      */
     public function __construct(
-        ContainerInterface $container,
+        Container $container,
         callable $action,
         array $params = []
     ){
@@ -109,41 +106,16 @@ class ActionMiddleware implements MiddlewareInterface{
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface{
-        if(is_array($this->action) && $this->action[0] instanceof Controller){
-            $object = $this->action[0];
-        }else{
-            $object = null;
-        }
-
-        $reflection = new ReflectionCallable($this->action);
-        $args       = [];
-
-        foreach($reflection->getReflection()->getParameters() as $parameter){
-            $name   = $parameter->getName();
-
-            if($name === "_request"){
-                $args[] = $request;
-            }elseif($name === "_params"){
-                $args[] = $this->params;
-            }else if(array_key_exists($name, $this->params)){
-                $args[] = $this->params[$name];
-            }else if($this->container->has("action.params." . $name)){
-                $args[] = $this->container->get("action.params." . $name);
-            }else if($parameter->hasType() && class_exists($parameter->getType())
-                && $this->container->has($parameter->getType())
-            ){
-                $args[] = $this->container->get($parameter->getType());
-            }else if($parameter->isDefaultValueAvailable()){
-                $args[] = $parameter->getDefaultValue();
-            }else if($parameter->allowsNull()){
-                $args[] = null;
-            }else{
-                throw new \LogicException();
-            }
-        }
+        $action = $this->container->lazyCallable(
+            $this->action,
+            array_merge([
+                "_request"  => $request,
+                "_params"   => $this->params,
+            ], $this->params)
+        );
 
         $response   = $handler->handle($request);
-        $_response  = $reflection->invokeArgs($object, $args);
+        $_response  = $action->load();
 
         if($_response instanceof ResponseInterface){
             $response   = $_response;
