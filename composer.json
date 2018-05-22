@@ -19,7 +19,7 @@
         "fratily/http-server-middleware": "^0.2.0",
         "fratily/reflection": "^0.3.0",
         "fratily/utility": "^0.1.0",
-        "fratily/container": "^0.1.0",
+        "fratily/container": "^0.2.0",
         "twig/twig": "^2.0"
     },
     "autoload": {
