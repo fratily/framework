@@ -91,7 +91,7 @@ class ActionMiddleware implements MiddlewareInterface{
      */
     public function __construct(
         Container $container,
-        callable $action,
+        $action,
         array $params = []
     ){
         $this->container    = $container;
