@@ -16,6 +16,7 @@ namespace Fratily\Framework\Container;
 use Fratily\Framework\Application;
 use Fratily\Router\RouteCollector;
 use Fratily\Http\Factory\ResponseFactory;
+use Fratily\Http\Message\Response\Emitter;
 use Fratily\Container\Container;
 use Fratily\Container\ContainerConfig;
 use Fratily\Cache\SimpleCache;
@@ -62,6 +63,7 @@ class AppConfig extends ContainerConfig{
         $container->set("app.simplecache", $container->lazyNew(SimpleCache::class));
         $container->set("app.routes", $container->lazyNew(RouteCollector::class));
         $container->set("app.factory.response", $container->lazyNew(ResponseFactory::class));
+        $container->set("app.response.emitter", $container->lazyNew(Emitter::class));
 
         $container->value("app.debug", $this->debug);
     }
