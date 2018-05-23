@@ -51,7 +51,7 @@ class CoreConfig extends ContainerConfig{
                 $container->lazyNew(
                     \Twig\Loader\FilesystemLoader::class,
                     [
-                        FRATILY_FW_ROOT . "/recource/views"
+                        FRATILY_FW_ROOT . "/resource/views"
                     ]
                 )
             ]
