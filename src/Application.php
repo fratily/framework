@@ -215,6 +215,8 @@ class Application{
             $name   = "_rule_" . hash("md5", $path . bin2hex(random_bytes(2)));
         }
 
+        $data["_action"]    = $action;
+
         $this->routes->addRoute($name, $path, $method, $data);
 
         return $this;
@@ -305,21 +307,37 @@ class Application{
     }
 
     /**
+     * レスポンスを生成する
+     *
+     * @param   ServerRequestInterface  $request
+     *
+     * @return  Response
+     */
+    public function generateResponse(ServerRequestInterface $request){
+        return $this->container->newInstance(Response::class, [
+            "request"   => $request,
+            "handler"   => $this->generateHandler($request),
+        ]);
+    }
+
+    /**
      * ミドルウェアハンドラを生成する
      *
      * @param   ServerRequestInterface  $request
      *
      * @return  RequestHandlerInterface
      */
-    public function generateHandler(ServerRequestInterface $request){
+    protected function generateHandler(ServerRequestInterface $request){
         $result = $this->routes
             ->createRouter($request->getMethod())
             ->search($request->getUri()->getPath());
 
         if($result[0] === Router::NOT_FOUND){
-            $action = function(){throw new NotFound();};
+            $action = function(){
+                throw new \Fratily\Http\Message\Status\NotFound();
+            };
         }else{
-            $action = $result[2]["action"];
+            $action = $result[2]["_action"];
         }
 
         $debugMiddleware    = [];
@@ -332,59 +350,18 @@ class Application{
             $debugMiddleware,
             $this->middlewares["before"],
             self::normalizeMiddlewares($result[2]["middleware.before"] ?? []),
-            [$this->createActionMiddleware($action, $result[1])],
+            [new Middleware\ActionMiddleware($this->container, $action, $result[1])],
             self::normalizeMiddlewares($result[2]["middleware.before"] ?? []),
             $this->middlewares["after"]
         );
 
-        if(!$this->container->has(ResponseFactoryInterface::class)){
-            throw new \LogicException();
-        }
-
-        $factory    = $this->container->get(ResponseFactoryInterface::class);
-
-        if(!($factory instanceof ResponseFactoryInterface)){
-            throw new \LogicException();
-        }
-
-        $handler    = new RequestHandler($factory);
+        $handler    = $this->container->newInstance(RequestHandler::class);
 
         foreach($middlewares as $middleware){
             $handler->append($middleware);
         }
 
         return $handler;
-    }
-
-    /**
-     * アクション実行ミドルウェアを作成する
-     *
-     * @param   callable|string $action
-     * @param   mixed[] $params
-     *
-     * @return  ActionMiddleware
-     *
-     * @throws \LogicException
-     */
-    private function createActionMiddleware($action, array $params = []){
-        if(is_callable($action)){
-            if(is_array($action) && is_string($action[0])){
-                $reflection = new \ReflectionMethod($action[0], $action[1]);
-
-                if($reflection->isStatic()){
-                    return new Middleware\ActionMiddleware($this->container, $action, $params);
-                }
-            }else{
-                return new Middleware\ActionMiddleware($this->container, $action, $params);
-            }
-        }
-
-        return Middleware\ActionMiddleware::getInstanceWithController(
-            $this->container,
-            $action[0],
-            $action[1],
-            $params
-        );
     }
 
     /**
