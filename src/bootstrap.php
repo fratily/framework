@@ -58,3 +58,33 @@ if(!function_exists("getComposerClassLoader")){
         return $loader;
     }
 }
+
+if(!function_exists("throwThrowableObject")){
+    /**
+     * 引数で与えられた名前のクラスがスロー可能な例外クラスであればスローする。
+     *
+     * @param   string  $class
+     * @param   string  $msg
+     * @param   int $code
+     * @param   Throwable   $prev
+     *
+     * @return  void
+     *
+     * @throws  InvalidArgumentException
+     * @throws  LogicException
+     * @throws  Exception
+     */
+    function throwThrowableObject(string $class, string $msg = "", int $code = 0, Throwable $prev = null){
+        if(!class_exists($class)){
+            throw new InvalidArgumentException();
+        }
+
+        $instance   = new $class($msg, $code, $prev);
+
+        if($instance instanceof Exception){
+            throw $instance;
+        }
+
+        throw LogicException;
+    }
+}

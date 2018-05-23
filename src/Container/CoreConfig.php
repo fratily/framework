@@ -59,9 +59,10 @@ class CoreConfig extends ContainerConfig{
         $container->set("core.middleware.action", $container->lazyNew(
             \Fratily\Framework\Middleware\ActionMiddleware::class,
             [
-                "action"    => function(){
-                    throw new \Fratily\Http\Message\Status\InternalServerError();
-                },
+                "action"    => $container->lazy(
+                    "throwThrowableObject",
+                    \Fratily\Http\Message\Status\InternalServerError::class
+                ),
                 "params"    => [],
             ]
         ));
