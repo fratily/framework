@@ -340,17 +340,11 @@ class Application{
             $action = $result[2]["_action"];
         }
 
-        $debugMiddleware    = [];
-
-        if($this->debug){
-            $debugMiddleware[]  = $this->createDebugMiddleware();
-        }
-
         $middlewares    = array_merge(
-            $debugMiddleware,
+            $this->createDebugMiddlewares(),
             $this->middlewares["before"],
             self::normalizeMiddlewares($result[2]["middleware.before"] ?? []),
-            [new Middleware\ActionMiddleware($this->container, $action, $result[1])],
+            $this->createActionMiddleware($action, $result[1]),
             self::normalizeMiddlewares($result[2]["middleware.before"] ?? []),
             $this->middlewares["after"]
         );
@@ -365,17 +359,36 @@ class Application{
     }
 
     /**
-     * デバッグ用ミドルウェアを作成する
+     * アクション実行用ミドルウェアリストを作成する
      *
-     * @return  Middleware\DebugMiddleware
+     * @param   mixed   $action
+     * @param   mixed[] $params
+     *
+     * @return  MiddlewareInterface[]
      */
-    private function createDebugMiddleware(){
-        $path   = implode(DS, [__DIR__, "..", "resource", "twig"]);
+    private function createActionMiddleware($action, array $params){
+        $middlewares    = [];
 
-        if(!$this->container->has(ResponseFactoryInterface::class)){
-            throw new \LogicException();
+        $middlewares[]  = $this->container->get("core.middleware.action")
+            ->setAction($action)
+            ->setParams($params)
+        ;
+
+        return $middlewares;
+    }
+
+    /**
+     * デバッグ用ミドルウェアリストを作成する
+     *
+     * @return  MiddlewareInterface[]
+     */
+    private function createDebugMiddlewares(){
+        $middlewares    = [];
+
+        if($this->debug){
+            $middlewares[]  = $this->container->get("core.middleware.debug");
         }
 
-        return new Middleware\DebugMiddleware($path, $this->container->get(ResponseFactoryInterface::class));
+        return $middlewares;
     }
 }

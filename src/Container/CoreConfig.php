@@ -54,5 +54,22 @@ class CoreConfig extends ContainerConfig{
                 )
             ]
         ));
+
+        // Middleware
+        $container->set("core.middleware.action", $container->lazyNew(
+            \Fratily\Framework\Middleware\ActionMiddleware::class,
+            [
+                "action"    => function(){
+                    throw new \Fratily\Http\Message\Status\InternalServerError();
+                },
+                "params"    => [],
+            ]
+        ));
+        $container->set("core.middleware.debug", $container->lazyNew(
+            \Fratily\Framework\Middleware\DebugMiddleware::class,
+            [
+                "twig"  => $container->lazyGet("core.twig"),
+            ]
+        ));
     }
 }

@@ -35,9 +35,9 @@ use Interop\Http\Factory\ResponseFactoryInterface;
 class DebugMiddleware implements MiddlewareInterface{
 
     /**
-     * @var string
+     * @var Environment
      */
-    private $path;
+    private $twig;
 
     /**
      * @var ResponseFactoryInterface
@@ -47,16 +47,11 @@ class DebugMiddleware implements MiddlewareInterface{
     /**
      * Constructor
      *
-     * @param   ContainerInterface  $container
-     * @param   callable    $action
-     * @param   mixed[] $params
+     * @param   Environment $twig
+     * @param   ResponseFactoryInterface    $factory
      */
-    public function __construct(string $path, ResponseFactoryInterface $factory){
-        if(!is_dir($path)){
-            throw new \InvalidArgumentException();
-        }
-
-        $this->path     = realpath($path);
+    public function __construct(Environment $twig, ResponseFactoryInterface $factory){
+        $this->twig     = $twig;
         $this->factory  = $factory;
     }
 

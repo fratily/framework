@@ -100,6 +100,32 @@ class ActionMiddleware implements MiddlewareInterface{
     }
 
     /**
+     * アクションを設定する
+     *
+     * @param   mixed   $action
+     *
+     * @return  $this
+     */
+    public function setAction($action){
+        $this->action   = $action;
+
+        return $this;
+    }
+
+    /**
+     * パラメータを設定する
+     *
+     * @param   mixed[] $params
+     *
+     * @return  $this
+     */
+    public function setParams(array $params){
+        $this->params   = $params;
+
+        return $this;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function process(
