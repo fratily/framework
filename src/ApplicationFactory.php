@@ -58,10 +58,15 @@ class ApplicationFactory{
         }
 
         if(!($container instanceof ContainerInterface)){
-            $containerConfig    = array_merge([
-                new Container\CoreConfig(),
-                new Container\AppConfig($this->cache, $debug),
-            ], $containerConfig);
+            $containerConfig    = array_merge(
+                [
+                    new Container\AppConfig($this->cache, $debug),
+                ],
+                $containerConfig,
+                [
+                    new Container\CoreConfig(),
+                ]
+            );
 
             $container  = (new ContainerFactory())
                 ->createWithConfig($containerConfig, true)
