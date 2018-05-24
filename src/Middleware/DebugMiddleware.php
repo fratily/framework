@@ -107,7 +107,6 @@ class DebugMiddleware implements MiddlewareInterface{
             }
         }
 
-        $twig       = new Environment(new FilesystemLoader($this->path));
         $response   = $this->factory->createResponse($status);
 
         $context    = [
@@ -125,7 +124,7 @@ class DebugMiddleware implements MiddlewareInterface{
             ];
         }
 
-        $response->getBody()->write($twig->render("error.twig", $context));
+        $response->getBody()->write($this->twig->render("error.twig", $context));
 
         return $response;
     }
