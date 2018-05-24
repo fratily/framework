@@ -57,15 +57,42 @@ class CoreConfig extends ContainerConfig{
             ]
         ));
 
+        // Controller
+        $container->set("core.controller.httperror", $container->lazyNew(
+            \Fratily\Framework\Controller\HttpErrorController::class
+        ));
+
+        // Action
+        $cotnainer->value("core.action.badRequest", [
+            $container->lazyGet("core.controller.httperror"), "badRequest"
+        ]);
+        $cotnainer->value("core.action.forbidden", [
+            $container->lazyGet("core.controller.httperror"), "forbidden"
+        ]);
+        $cotnainer->value("core.action.notFound", [
+            $container->lazyGet("core.controller.httperror"), "notFound"
+        ]);
+        $cotnainer->value("core.action.methodNotAllowed", [
+            $container->lazyGet("core.controller.httperror"), "methodNotAllowed"
+        ]);
+        $cotnainer->value("core.action.internalServerError", [
+            $container->lazyGet("core.controller.httperror"), "internalServerError"
+        ]);
+        $cotnainer->value("core.action.notImplemented", [
+            $container->lazyGet("core.controller.httperror"), "notImplemented"
+        ]);
+        $cotnainer->value("core.action.serviceUnavailable", [
+            $container->lazyGet("core.controller.httperror"), "serviceUnavailable"
+        ]);
+
         // Middleware
         $container->set("core.middleware.action", $container->lazyNew(
             \Fratily\Framework\Middleware\ActionMiddleware::class,
             [
-                "action"    => $container->lazy(
-                    "throwThrowableObject",
-                    \Fratily\Http\Message\Status\InternalServerError::class
-                ),
-                "params"    => [],
+                "action"    => $container->lazyValue("core.action.internalServerError"),
+                "params"    => [
+                    "msg"   => "Action is undefined.",
+                ],
             ]
         ));
         $container->set("core.middleware.debug", $container->lazyNew(
