@@ -63,25 +63,25 @@ class CoreConfig extends ContainerConfig{
         ));
 
         // Action
-        $cotnainer->value("core.action.badRequest", [
+        $container->value("core.action.badRequest", [
             $container->lazyGet("core.controller.httperror"), "badRequest"
         ]);
-        $cotnainer->value("core.action.forbidden", [
+        $container->value("core.action.forbidden", [
             $container->lazyGet("core.controller.httperror"), "forbidden"
         ]);
-        $cotnainer->value("core.action.notFound", [
+        $container->value("core.action.notFound", [
             $container->lazyGet("core.controller.httperror"), "notFound"
         ]);
-        $cotnainer->value("core.action.methodNotAllowed", [
+        $container->value("core.action.methodNotAllowed", [
             $container->lazyGet("core.controller.httperror"), "methodNotAllowed"
         ]);
-        $cotnainer->value("core.action.internalServerError", [
+        $container->value("core.action.internalServerError", [
             $container->lazyGet("core.controller.httperror"), "internalServerError"
         ]);
-        $cotnainer->value("core.action.notImplemented", [
+        $container->value("core.action.notImplemented", [
             $container->lazyGet("core.controller.httperror"), "notImplemented"
         ]);
-        $cotnainer->value("core.action.serviceUnavailable", [
+        $container->value("core.action.serviceUnavailable", [
             $container->lazyGet("core.controller.httperror"), "serviceUnavailable"
         ]);
 
