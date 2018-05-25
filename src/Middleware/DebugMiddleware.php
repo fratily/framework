@@ -14,19 +14,12 @@
 namespace Fratily\Framework\Middleware;
 
 use Fratily\Http\Message\Status\HttpStatus;
-use Twig\{
-    Loader\FilesystemLoader,
-    Environment
-};
-use Psr\Http\Message\{
-    ServerRequestInterface,
-    ResponseInterface,
-    StreamInterface
-};
-use Psr\Http\Server\{
-    RequestHandlerInterface,
-    MiddlewareInterface
-};
+use Twig\Environment;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Interop\Http\Factory\ResponseFactoryInterface;
 
 /**
