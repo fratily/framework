@@ -17,6 +17,7 @@ use Fratily\Router\RouteCollector;
 use Fratily\Container\Container;
 use Fratily\Container\ContainerConfig;
 use Fratily\Http\Message\Response\EmitterInterface;
+use Fratily\EventManager\EventManagerInterface;
 use Twig\Environment;
 use Psr\Container\ContainerInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -43,6 +44,7 @@ class CoreConfig extends ContainerConfig{
         $container->type(CacheInterface::class, $container->lazyGet("app.simplecache"));
         $container->type(LoggerInterface::class, $container->lazyGet("app.log"));
         $container->type(Environment::class, $container->lazyGet("app.twig"));
+        $container->type(EventManagerInterface::class, $container->lazyGet("app.eventManager"));
 
         // Twig
         $container->set("core.twig", $container->lazyNew(

@@ -16,12 +16,11 @@ namespace Fratily\Framework;
 use Fratily\Container\Container;
 use Fratily\Router\RouteCollector;
 use Fratily\Router\Router;
-use Fratily\Http\Message\Status\NotFound;
 use Fratily\Http\Server\RequestHandler;
+use Fratily\EventManager\EventManagerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Interop\Http\Factory\ResponseFactoryInterface;
 
 /**
  *
@@ -39,6 +38,11 @@ class Application{
      * @var Container
      */
     private $container;
+
+    /**
+     * @var EventManagerInterface
+     */
+    private $eventMng;
 
     /**
      * @var RouteCollector
@@ -75,13 +79,21 @@ class Application{
     /**
      * Constructor
      *
-     * @param   ContainerInterface  $container
+     * @param   Container   $container
+     * @param   EventManagetInterface   $eventMng
      * @param   RouteCollector  $routes
+     * @param   bool    $debug
      */
-    public function __construct(Container $container, RouteCollector $routes, bool $debug = false){
+    public function __construct(
+        Container $container,
+        EventManagerInterface $eventMng,
+        RouteCollector $routes,
+        bool $debug = false
+    ){
         $this->startedAt    = time();
         $this->debug        = $debug;
         $this->container    = $container;
+        $this->eventMng     = $eventMng;
         $this->routes       = $routes;
     }
 
@@ -314,6 +326,10 @@ class Application{
      * @return  Response
      */
     public function generateResponse(ServerRequestInterface $request){
+        $request    = $request
+            ->withAttribute("app.debug", $this->debug)
+        ;
+
         return $this->container->newInstance(Response::class, [
             "request"   => $request,
             "handler"   => $this->generateHandler($request),

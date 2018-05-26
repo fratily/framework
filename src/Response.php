@@ -14,7 +14,10 @@
 namespace Fratily\Framework;
 
 use Fratily\Http\Message\Response\EmitterInterface;
-use Psr\Http\Message\RequestInterface;
+use Fratily\EventManager\EventManagerInterface;
+use Fratily\EventManager\Event;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -23,7 +26,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 class Response{
 
     /**
-     * @var RequestInterface
+     * @var ServerRequestInterface
      */
     protected $request;
 
@@ -36,6 +39,16 @@ class Response{
      * @var EmitterInterface
      */
     protected $emitter;
+
+    /**
+     * @var EventManagerInterface
+     */
+    protected $eventMng;
+
+    /**
+     * @var ResponseInterface
+     */
+    private $response;
 
     /**
      * @var bool
@@ -55,33 +68,17 @@ class Response{
      * @param   EmitterInterface    $emmiter
      */
     public function __construct(
-        RequestInterface $request,
+        ServerRequestInterface $request,
         RequestHandlerInterface $handler,
-        EmitterInterface $emmiter
+        EmitterInterface $emmiter,
+        EventManagerInterface $eventMng
     ){
         $this->request  = $request;
         $this->handler  = $handler;
         $this->emitter  = $emmiter;
+        $this->eventMng = $eventMng;
         $this->send     = false;
-    }
-
-    /**
-     * リクエストハンドラを実行し生成されたレスポンスを送信する
-     *
-     * @
-     */
-    public function send(){
-        if(!$this->send){
-            try{
-                $this->emitter->emit($this->handler->handle($this->request));
-            }catch(\Throwable $e){
-                $this->error    = $e;
-            }
-
-            $this->send = true;
-        }
-
-        return $this->error instanceof \Throwable;
+        $this->error    = null;
     }
 
     /**
@@ -93,4 +90,80 @@ class Response{
         return $this->error;
     }
 
+    /**
+     * リクエストハンドラを実行し生成されたレスポンスを送信する
+     *
+     * @
+     */
+    public function send(){
+        if(!$this->send){
+            $response   = $this->handle();
+
+            if($response !== null){
+                $this->emit($response);
+            }
+
+            $this->send = true;
+        }
+
+        return $this->error instanceof \Throwable;
+    }
+
+    /**
+     * ミドルウェアハンドラを実行してレスポンスを生成する
+     *
+     * @return  ResponseInterface|null
+     */
+    private function handle(){
+        $params = [
+            "start"     => null,
+            "finish"    => null,
+            "response"  => null,
+            "error"     => null,
+        ];
+
+        try{
+            $params["start"]    = time();
+            $params["response"] = $this->handler->handle($this->request);
+        }catch(\Throwable $e){
+            $params["error"]    = $e;
+            $this->error        = $e;
+        }finally{
+            $params["finish"]   = time();
+        }
+
+        $this->eventMng->trigger(new Event("response.handler.finish", $params));
+
+        $this->response = $params["response"];
+
+        return $this->response;
+    }
+
+    /**
+     * レスポンスを送信する
+     *
+     * @param   ResponseInterface   $response
+     *
+     * @return  void
+     */
+    private function emit(ResponseInterface $response){
+        $params = [
+            "start"     => null,
+            "finish"    => null,
+            "error"     => null,
+        ];
+
+        try{
+            $params["start"]    = time();
+
+            $this->emitter->emit($response);
+        }catch(\Throwable $e){
+            $params["error"]    = $e;
+            $this->error        = $e;
+        }finally{
+            $params["finish"]   = time();
+        }
+
+        $this->eventMng->trigger(new Event("response.emit.finish", $params));
+    }
 }

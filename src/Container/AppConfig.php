@@ -20,6 +20,7 @@ use Fratily\Http\Message\Response\Emitter;
 use Fratily\Container\Container;
 use Fratily\Container\ContainerConfig;
 use Fratily\Cache\SimpleCache;
+use Fratily\EventManager\EventManager;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
@@ -64,6 +65,7 @@ class AppConfig extends ContainerConfig{
         $container->set("app.routes", $container->lazyNew(RouteCollector::class));
         $container->set("app.factory.response", $container->lazyNew(ResponseFactory::class));
         $container->set("app.response.emitter", $container->lazyNew(Emitter::class));
+        $container->set("app.eventManager", $container->lazyNew(EventManager::class));
 
         $container->value("app.debug", $this->debug);
     }
