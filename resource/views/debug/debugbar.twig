@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>debugbar</title>
+        <style>
+            /* --- common class --- */
+            .fratily-debugbar-scroll-wrapper{
+                overflow-x: hidden;
+                overflow-y: scroll;
+                width: calc(100% + 17px);
+                height: 100%;
+            }
+            
+            /* --- base layout --- */
+            body{
+                margin-bottom: 30px;
+            }
+            
+            #fratily-debugbar{
+                overflow: hidden;
+                position: fixed;
+                box-sizing: border-box;
+                bottom: -300px;
+                left: 0;
+                margin: 0;
+                width: 100%;
+                height: 330px;
+                border: 0;
+                padding: 0;
+                transition: all .3s ease;
+            }
+            
+            #fratily-debugbar-menu{
+                box-sizing: border-box;
+                overflow: hidden;
+                position: absolute;
+                top: 30px;
+                left: -200px;
+                margin: 0;
+                width: 200px;
+                height: 100%;
+                background-color: #555;
+                color: #eee;
+                transition: all .3s ease;
+            }
+            
+            #fratily-debugbar-menu-items{
+                display: block;
+                margin: 0;
+                width: 200px;
+                height: auto;
+                border: 0;
+                padding: 0;
+                list-style: none;
+                cursor: pointer;
+            }
+            
+            .fratily-debugbar-menu-item{
+                display: block;
+                margin: 0;
+                width: 100%;
+                height: 30px;
+                border-bottom: 1px #aaa dotted;
+                padding: 0;
+                text-align: center;
+                font-size: 18px;
+                line-height: 29px;
+            }
+            
+            #fratily-debugbar-header{
+                overflow: hidden;
+                box-sizing: border-box;
+                position: absolute;
+                top: 0;
+                left: 0;
+                margin: 0;
+                width: 100%;
+                height: 30px;
+                padding: 0;
+                background-color: #555;
+                transition: all .3s ease;
+            }
+            
+            #fratily-debugbar-header-menu-button{
+                box-sizing: border-box;
+                position: absolute;
+                top: 0;
+                left: 0;
+                margin: 0;
+                width: 30px;
+                height: 30px;
+                border: 0;
+                padding: 0;
+                background-color: #555;
+                opacity: .8;
+                cursor: pointer;
+            }
+            
+            #fratily-debugbar-body{
+                overflow: hidden;
+                box-sizing: border-box;
+                margin: 30px 0 0;
+                width: 100%;
+                height: calc(100% - 30px);
+                padding: 0;
+                background-color: #ddd;
+            }
+            
+            .fratily-debugbar-body-item{
+                box-sizing: border-box;
+                margin: 0 auto;
+                width: 100%;
+                height: 100%;
+                padding: 10px 2%;
+                opacity: 0;
+                transition: all .3s ease;
+            }
+            
+            /* --- base taransform --- */
+            #fratily-debugbar.open{
+                transform: translateY(-300px);
+            }
+            
+            /* --- menu button design and transform */
+            #fratily-debugbar-header-menu-button span{
+                display: block;
+                box-sizing: border-box;
+                position: absolute;
+                left: 5%;
+                width: 90%;
+                height: 4px;
+                border-radius: 4px;
+                background-color: #eee;
+                transition: all .3s ease;
+            }
+            
+            #fratily-debugbar-header-menu-button span:nth-of-type(1){
+              top: 4px;
+            }
+            
+            #fratily-debugbar-header-menu-button span:nth-of-type(2){
+              top: 13px;
+            }
+            
+            #fratily-debugbar-header-menu-button span:nth-of-type(3){
+              bottom: 4px;
+            }
+            
+            #fratily-debugbar-header-menu-button:hover{
+                opacity: 1;
+            }
+            
+            /* --- menu transform --- */
+            
+            #fratily-debugbar-menu.open{
+                transform: translateX(200px);
+            }
+
+            #fratily-debugbar-menu.open + #fratily-debugbar-header #fratily-debugbar-header-menu-button span:nth-of-type(1){
+              transform: translateY(9px) rotate(-45deg);
+            }
+            
+            #fratily-debugbar-menu.open + #fratily-debugbar-header #fratily-debugbar-header-menu-button span:nth-of-type(2){
+              opacity: 0;
+            }
+            
+            #fratily-debugbar-menu.open + #fratily-debugbar-header #fratily-debugbar-header-menu-button span:nth-of-type(3){
+              transform: translateY(-9px) rotate(45deg);
+            }
+            
+            /* --- body item --- */
+            .fratily-debugbar-body-item[data-fratily-debugbar]{
+                display: none;
+            }
+            
+            .fratily-debugbar-body-item.select{
+                display: block;
+                opacity: 1;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="fratily-debugbar">
+            <div id="fratily-debugbar-menu">
+                <div class="fratily-debugbar-scroll-wrapper">
+                    <ul id="fratily-debugbar-menu-items">
+                        <li class="fratily-debugbar-menu-item" data-fratily-debugbar="performance"><span>Performance</span></li>
+                        <li class="fratily-debugbar-menu-item" data-fratily-debugbar="request"><span>Request</span></li>
+                        <li class="fratily-debugbar-menu-item" data-fratily-debugbar="response"><span>Response</span></li>
+                        <li class="fratily-debugbar-menu-item" data-fratily-debugbar="logs"><span>Logs</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div id="fratily-debugbar-header">
+                <div id="fratily-debugbar-header-menu-button">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <div id="fratily-debugbar-body">
+                <div class="fratily-debugbar-scroll-wrapper">
+                    <div class="fratily-debugbar-body-item" data-fratily-debugbar="performance">
+                        <ul>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                            <li>performance</li>
+                        </ul>
+                    </div>
+                    <div class="fratily-debugbar-body-item" data-fratily-debugbar="request">
+                        request
+                    </div>
+                    <div class="fratily-debugbar-body-item" data-fratily-debugbar="response">
+                        response
+                    </div>
+                    <div class="fratily-debugbar-body-item" data-fratily-debugbar="logs">
+                        logs
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            (function(){
+                var menuItems = document.getElementsByClassName("fratily-debugbar-menu-item");
+                var length    = menuItems.length;
+                
+                for(var i = 0; i < length; i++){
+                    if(menuItems[i].hasAttribute("data-fratily-debugbar")){
+                        menuItems[i].addEventListener("click", function(){
+                            var tag      = this.getAttribute("data-fratily-debugbar");
+                            var contents = document.getElementsByClassName("fratily-debugbar-body-item");
+                            var length   = contents.length;
+                            var menu     = document.getElementById("fratily-debugbar-menu");
+                            
+                            for(var i = 0; i < length; i++){
+                                if(contents[i].hasAttribute("data-fratily-debugbar")){
+                                    if(tag === contents[i].getAttribute("data-fratily-debugbar")){
+                                        contents[i].classList.add("select");
+                                    }else{
+                                        contents[i].classList.remove("select");
+                                    }
+                                }
+                            }
+                            
+                            if(menu){
+                                menu.classList.remove("open");
+                            }
+                        }, false);
+                    }
+                }
+                
+                document.getElementById("fratily-debugbar-header-menu-button").addEventListener("click", function(){
+                    var menu = document.getElementById("fratily-debugbar-menu");
+                    var base = document.getElementById("fratily-debugbar");
+
+                    if(base){
+                        base.classList.add("open");
+                    }
+                    
+                    if(menu){
+                        menu.classList.toggle("open");
+                    }
+                }, false);
+                
+                document.getElementById("fratily-debugbar-header").addEventListener("click", function(e){
+                    if(e.target.id === "fratily-debugbar-header"){
+                        var base = document.getElementById("fratily-debugbar");
+
+                        if(base){
+                            base.classList.toggle("open");
+                        }
+                    }
+                }, false);
+            }());
+        </script>
+    </body>
+</html>
