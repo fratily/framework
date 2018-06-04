@@ -21,7 +21,8 @@
         "fratily/utility": "^0.1.0",
         "fratily/container": "^0.2.0",
         "fratily/event-manager": "^0.1.0",
-        "twig/twig": "^2.0"
+        "twig/twig": "^2.0",
+        "fratily/debugbar": "^0.1.0"
     },
     "autoload": {
         "psr-4": {
