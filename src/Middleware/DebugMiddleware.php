@@ -14,6 +14,8 @@
 namespace Fratily\Framework\Middleware;
 
 use Fratily\Http\Message\Status\HttpStatus;
+use Fratily\EventManager\EventManagerInterface;
+use Fratily\DebugBar\DebugBar;
 use Twig\Environment;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -38,14 +40,24 @@ class DebugMiddleware implements MiddlewareInterface{
     private $factory;
 
     /**
+     * @var DebugBar
+     */
+    private $debugbar;
+
+    /**
      * Constructor
      *
      * @param   Environment $twig
      * @param   ResponseFactoryInterface    $factory
      */
-    public function __construct(Environment $twig, ResponseFactoryInterface $factory){
+    public function __construct(
+        Environment $twig,
+        ResponseFactoryInterface $factory,
+        DebugBar $debugbar
+    ){
         $this->twig     = $twig;
         $this->factory  = $factory;
+        $this->debugbar = $debugbar;
     }
 
     /**
@@ -77,7 +89,12 @@ class DebugMiddleware implements MiddlewareInterface{
      * @return  StreamInterface
      */
     private function addDebugToolBar(StreamInterface $body){
-        return $body;
+        $newBody    = new \Fratily\Http\Message\Stream\MemoryStream();
+
+        $body->rewind();
+        $newBody->write($this->debugbar->embed($body->getContents()));
+
+        return $newBody;
     }
 
     /**

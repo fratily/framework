@@ -22,6 +22,11 @@ use Twig\Environment;
  */
 abstract class Controller{
 
+    use \Fratily\Framework\Traits\TimelineTrait;
+    use \Fratily\Framework\Traits\DumpTrait;
+    use \Fratily\Framework\Traits\LogTrait;
+    use \Fratily\Framework\Traits\EventTrait;
+
     /**
      * @var ResponseFactoryInterface
      */
@@ -32,6 +37,8 @@ abstract class Controller{
      */
     private $twig;
 
+    private $debug;
+
     /**
      * Constructor
      *
@@ -39,10 +46,21 @@ abstract class Controller{
      */
     public function __construct(
         ResponseFactoryInterface $factory,
-        Environment $twig
+        Environment $twig,
+        bool $debug
     ){
         $this->factory  = $factory;
         $this->twig     = $twig;
+        $this->debug    = $debug;
+    }
+
+    /**
+     * アプリケーションがデバッグモードか確認する
+     *
+     * @return  void
+     */
+    protected function isDebug(){
+        return $this->debug;
     }
 
     /**
