@@ -64,7 +64,7 @@ class ApplicationFactory{
                 ],
                 $containerConfig,
                 [
-                    new Container\CoreConfig(),
+                    new Container\CoreConfig($debug),
                 ]
             );
 
