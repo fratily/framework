@@ -229,7 +229,7 @@ class Application{
 
         $data["_action"]    = $action;
 
-        $this->routes->addRoute($name, $path, $method, $data);
+        $this->routes->addRoute($name, $path, (array)$method, $data);
 
         return $this;
     }
