@@ -170,7 +170,7 @@ class CoreConfig extends ContainerConfig{
                 $container->lazyGet("app.log")
             )
             ->type(
-                \Twig\Environment::class,
+                \Twig_Environment::class,
                 $container->lazyGet("app.twig")
             )
             ->type(
