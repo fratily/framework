@@ -248,14 +248,14 @@ class CoreConfig extends ContainerConfig{
             ->set("core.middleware.debug", $container->lazyNew(
                 \Fratily\Framework\Middleware\DebugMiddleware::class,
                 [
-                    "debug" => $container->lazyGet("app.debug"),
+                    "debug" => $container->lazyValue("app.debug"),
                 ]
             ))
             ->set("core.middleware.error", $container->lazyNew(
                 \Fratily\Framework\Middleware\ErrorMiddleware::class,
                 [
                     "twig"  => $container->lazyGet("core.twig"),
-                    "debug" => $container->lazyGet("app.debug"),
+                    "debug" => $container->lazyValue("app.debug"),
                 ]
             ))
         ;
