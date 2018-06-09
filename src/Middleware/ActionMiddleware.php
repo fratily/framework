@@ -132,7 +132,7 @@ class ActionMiddleware implements MiddlewareInterface{
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface{
-        $action = $this->container->lazyCallable(
+        $action = $this->container->lazy(
             $this->action,
             array_merge([
                 "_request"  => $request,
