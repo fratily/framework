@@ -18,7 +18,7 @@
     </div>
     <section>
         <h3>stack trace</h3>
-        {% for trace as error.trace %}
+        {% for trace in error.trace %}
         <div class="code">
             <span class="file">{{ trace.file }} {{ trace.line }}</span>
             <pre>
