@@ -76,9 +76,7 @@ class CoreConfig extends ContainerConfig{
         }
 
         $container
-            ->set(
-                "core.debugbar",
-                $container->lazyNew(
+            ->set("core.debugbar", $container->lazyNew(
                     \Fratily\DebugBar\DebugBar::class,
                     [
                         $container->lazyArray([
@@ -89,21 +87,15 @@ class CoreConfig extends ContainerConfig{
                     ]
                 )
             )
-            ->set(
-                "core.debugbar.message",
-                $container->lazyNew(
+            ->set("core.debugbar.message", $container->lazyNew(
                     \Fratily\DebugBar\Collector\MessageCollector::class
                 )
             )
-            ->set(
-                "core.debugbar.timeline",
-                $container->lazyNew(
+            ->set("core.debugbar.timeline", $container->lazyNew(
                     \Fratily\DebugBar\Collector\TimeCollector::class
                 )
             )
-            ->set(
-                "core.debugbar.dump",
-                $container->lazyNew(
+            ->set("core.debugbar.dump", $container->lazyNew(
                     \Fratily\DebugBar\Collector\VarCollector::class
                 )
             )
@@ -244,27 +236,28 @@ class CoreConfig extends ContainerConfig{
      */
     private function defineMiddleware(Container $container){
         $container
-            ->set(
-                "core.middleware.action",
-                $container->lazyNew(
-                    \Fratily\Framework\Middleware\ActionMiddleware::class,
-                    [
-                        "action"    => $container->lazyValue("core.action.internalServerError"),
-                        "params"    => [
-                            "msg"   => "Action is undefined.",
-                        ],
-                    ]
-                )
-            )
-            ->set(
-                "core.middleware.debug",
-                $container->lazyNew(
-                    \Fratily\Framework\Middleware\DebugMiddleware::class,
-                    [
-                        "twig"  => $container->lazyGet("core.twig"),
-                    ]
-                )
-            )
+            ->set("core.middleware.action", $container->lazyNew(
+                \Fratily\Framework\Middleware\ActionMiddleware::class,
+                [
+                    "action"    => $container->lazyValue("core.action.internalServerError"),
+                    "params"    => [
+                        "msg"   => "Action is undefined.",
+                    ],
+                ]
+            ))
+            ->set("core.middleware.debug", $container->lazyNew(
+                \Fratily\Framework\Middleware\DebugMiddleware::class,
+                [
+                    "debug" => $container->lazyGet("app.debug"),
+                ]
+            ))
+            ->set("core.middleware.error", $container->lazyNew(
+                \Fratily\Framework\Middleware\ErrorMiddleware::class,
+                [
+                    "twig"  => $container->lazyGet("core.twig"),
+                    "debug" => $container->lazyGet("app.debug"),
+                ]
+            ))
         ;
     }
 }

@@ -17,7 +17,6 @@ use Fratily\Http\Message\Status\HttpStatus;
 use Twig\Environment;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Interop\Http\Factory\ResponseFactoryInterface;
@@ -30,12 +29,17 @@ class ErrorMiddleware implements MiddlewareInterface{
     /**
      * @var Environment
      */
-    private $twig;
+    protected $twig;
 
     /**
      * @var ResponseFactoryInterface
      */
-    private $factory;
+    protected $factory;
+
+    /**
+     * @var bool
+     */
+    protected $debug;
 
     /**
      * Constructor
@@ -43,9 +47,14 @@ class ErrorMiddleware implements MiddlewareInterface{
      * @param   Environment $twig
      * @param   ResponseFactoryInterface    $factory
      */
-    public function __construct(Environment $twig, ResponseFactoryInterface $factory){
+    public function __construct(
+        Environment $twig,
+        ResponseFactoryInterface $factory,
+        bool $debug
+    ){
         $this->twig     = $twig;
         $this->factory  = $factory;
+        $this->debug    = $debug;
     }
 
     /**
@@ -56,69 +65,153 @@ class ErrorMiddleware implements MiddlewareInterface{
         RequestHandlerInterface $handler
     ): ResponseInterface{
         try{
-            $response   = $handler->handle($request->withAttribute("fratily.debug", true));
-
-            $response->withBody($this->addDebugToolBar($response->getBody()));
+            $response   = $handler->handle($request);
         }catch(\Throwable $e){
-            $response   = $this->createErrorPage($e);
+            $response   = $this->debug
+                ? $this->createErrorPageInDebugMode($e)
+                : $this->createErrorPage($e)
+            ;
         }
 
         return $response;
     }
 
     /**
-     * デバッグ用のツールバーを追加する
-     *
-     * レスポンスがhtml形式の場合のみ、
-     * bodyの閉じタグ直前にツールバーのブロック要素を追加する。
-     *
-     * @param   StreamInterface $body
-     *
-     * @return  StreamInterface
-     */
-    private function addDebugToolBar(StreamInterface $body){
-        return $body;
-    }
-
-    /**
-     * エラーページ描画用のレスポンスインスタンスを生成する
+     * 例外を本番で出しても問題ないレスポンスに変換する
      *
      * @param   \Throwable  $e
      *
      * @return  ResponseInterface
      */
-    private function createErrorPage(\Throwable $e){
-        $status = 500;
-        $phrase = HttpStatus::PHRASES[$status] ?? "Undefine";
+    protected function createErrorPage(\Throwable $e){
+        $response   = $this->factory->createResponse(
+            $e instanceof HttpStatus ? $e->getStatusCode : 500
+        );
 
-        if($e instanceof HttpStatus){
-            $status = $e->getStatusCode();
-            $phrase = $e->getStatusPhrase();
-
-            if($e instanceof \Fratily\Http\Message\Status\MethodNotAllowed){
-                $allow  = $e->getAllowed();
-            }
+        if($e instanceof \Fratily\Http\Message\Status\MethodNotAllowed){
+            $response   = $response->withHeader(
+                "Allow",
+                implode(", ", $e->getAllowed())
+            );
         }
 
-        $response   = $this->factory->createResponse($status);
+        return $response;
+    }
 
+    /**
+     * デバッグモード用のエラーページ描画用のレスポンスインスタンスを生成する
+     *
+     * @param   \Throwable  $e
+     *
+     * @return  ResponseInterface
+     */
+    protected function createErrorPageInDebugMode(\Throwable $e){
         $context    = [
-            "error" => [
-                "class"     => get_class($e),
-                "object"    => $e,
-                "prev"      => [],
-            ],
+            "errors"    => [],
         ];
 
-        while(($prev = $e->getPrevious()) !== null){
-            $context["error"]["prev"][] = [
-                "class"     => get_class($prev),
-                "object"    => $prev,
+        do{
+            $context["errors"][]    = $this->analysisError($e);
+        }while(($e = $e->getPrevious()) !== null);
+
+        $response->getBody()->write($this->twig->render("error.twig", $context));
+    }
+
+    protected function analysisError(\Throwable $e){
+        $result = [
+            "name"      => get_class($e),
+            "message"   => $e->getMessage(),
+            "code"      => $e->getCode(),
+            "file"      => $e->getFile(),
+            "line"      => $e->getLine(),
+            "script"    => $this->getFileContents($e->getFile(), $e->getLine()),
+            "trace"     => [],
+        ];
+
+        foreach($e->getTrace() as $t){
+            $call   = ($t["class"] ?? "") . ($t["type"] ?? "")
+                . ($t["function"] ?? "unknown") . "("
+                . implode(", ", array_map([$this, "getDumpString"], $t["args"] ?? []))
+                . ")"
+            ;
+
+            $result["trace"][]  = [
+                "call"      => $call,
+                "file"      => $t["file"] ?? "unknown",
+                "line"      => $t["line"] ?? 0,
+                "script"    => $this->getFileContents($t["file"], $t["line"]),
             ];
         }
 
-        $response->getBody()->write($this->twig->render("error.twig", $context));
+        return $result;
+    }
 
-        return $response;
+    /**
+     * ファイルの指定行と前後3行を取得する
+     *
+     * 行番号をキーとした連想配列を返す
+     *
+     * @param   string  $file
+     * @param   int $line
+     *
+     * @return  string[]
+     */
+    protected function getFileContents($file, $line){
+        if(!is_string($file) || !is_int($line)
+            || !is_file($file) || !is_readable($file)
+        ){
+            return null;
+        }
+
+        $file       = new \SplFileObject($file, "r");
+        $current    = 1;
+        $contents   = [];
+        $min        = $line - 3;
+        $max        = $line + 3;
+
+        foreach($file as $row){
+            if($min <= $current && $current <= $max){
+                $contents[$current] = $row;
+            }
+
+            $current++;
+        }
+
+        if(empty($contents)){
+            return null;
+        }
+
+        return $contents;
+    }
+
+    /**
+     * 変数の値をダンプ用文字列に変換する
+     *
+     * @param   mixed   $value
+     *
+     * @return  string
+     */
+    protected function getDumpString($value){
+        switch(gettype($value)){
+            case "boolean":
+                return $value ? "TRUE" : "FALSE";
+            case "integer":
+            case "double":
+                return (string)$value;
+            case "string":
+                return "'{$value}'";
+            case "array":
+                return "Array(" . count($value) . ")";
+            case "object":
+                return get_class($value);
+            case "resource":
+                return "resource(" . get_resource_type($value) . ")";
+            case "resource (closed)":
+                return "closed resource(" . get_resource_type($value) . ")";
+            case "NULL":
+                return "NULL";
+        }
+
+        return "unknown type";
     }
 }

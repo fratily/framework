@@ -13,16 +13,12 @@
  */
 namespace Fratily\Framework\Middleware;
 
-use Fratily\Http\Message\Status\HttpStatus;
-use Fratily\EventManager\EventManagerInterface;
 use Fratily\DebugBar\DebugBar;
-use Twig\Environment;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Server\MiddlewareInterface;
-use Interop\Http\Factory\ResponseFactoryInterface;
 
 /**
  *
@@ -30,19 +26,14 @@ use Interop\Http\Factory\ResponseFactoryInterface;
 class DebugMiddleware implements MiddlewareInterface{
 
     /**
-     * @var Environment
-     */
-    private $twig;
-
-    /**
-     * @var ResponseFactoryInterface
-     */
-    private $factory;
-
-    /**
      * @var DebugBar
      */
     private $debugbar;
+
+    /**
+     * @var debug
+     */
+    private $debug;
 
     /**
      * Constructor
@@ -50,14 +41,9 @@ class DebugMiddleware implements MiddlewareInterface{
      * @param   Environment $twig
      * @param   ResponseFactoryInterface    $factory
      */
-    public function __construct(
-        Environment $twig,
-        ResponseFactoryInterface $factory,
-        DebugBar $debugbar
-    ){
-        $this->twig     = $twig;
-        $this->factory  = $factory;
+    public function __construct(DebugBar $debugbar, bool $debug){
         $this->debugbar = $debugbar;
+        $this->debug    = $debug;
     }
 
     /**
@@ -67,12 +53,12 @@ class DebugMiddleware implements MiddlewareInterface{
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface{
-        try{
-            $response   = $handler->handle($request->withAttribute("fratily.debug", true));
+        $response   = $handler->handle($request->withAttribute("fratily.debug", true));
 
-            $response->withBody($this->addDebugToolBar($response->getBody()));
-        }catch(\Throwable $e){
-            $response   = $this->createErrorPage($e);
+        if($this->debug){
+            $response   = $response->withBody(
+                $this->addDebugToolBar($response->getBody())
+            );
         }
 
         return $response;
@@ -95,47 +81,5 @@ class DebugMiddleware implements MiddlewareInterface{
         $newBody->write($this->debugbar->embed($body->getContents()));
 
         return $newBody;
-    }
-
-    /**
-     * エラーページ描画用のレスポンスインスタンスを生成する
-     *
-     * @param   \Throwable  $e
-     *
-     * @return  ResponseInterface
-     */
-    private function createErrorPage(\Throwable $e){
-        $status = 500;
-        $phrase = HttpStatus::PHRASES[$status] ?? "Undefine";
-
-        if($e instanceof HttpStatus){
-            $status = $e->getStatusCode();
-            $phrase = $e->getStatusPhrase();
-
-            if($e instanceof \Fratily\Http\Message\Status\MethodNotAllowed){
-                $allow  = $e->getAllowed();
-            }
-        }
-
-        $response   = $this->factory->createResponse($status);
-
-        $context    = [
-            "error" => [
-                "class"     => get_class($e),
-                "object"    => $e,
-                "prev"      => [],
-            ],
-        ];
-
-        while(($prev = $e->getPrevious()) !== null){
-            $context["error"]["prev"][] = [
-                "class"     => get_class($prev),
-                "object"    => $prev,
-            ];
-        }
-
-        $response->getBody()->write($this->twig->render("error.twig", $context));
-
-        return $response;
     }
 }

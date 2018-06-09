@@ -357,7 +357,10 @@ class Application{
         }
 
         $middlewares    = array_merge(
-            $this->createDebugMiddlewares(),
+            [
+                $this->container->get("core.middleware.error"),
+                $this->container->get("core.middleware.debug"),
+            ],
             $this->middlewares["before"],
             self::normalizeMiddlewares($result[2]["middleware.before"] ?? []),
             $this->createActionMiddleware($action, $result[1]),
