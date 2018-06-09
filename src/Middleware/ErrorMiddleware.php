@@ -85,7 +85,7 @@ class ErrorMiddleware implements MiddlewareInterface{
      */
     protected function createErrorPage(\Throwable $e){
         $response   = $this->factory->createResponse(
-            $e instanceof HttpStatus ? $e->getStatusCode : 500
+            $e instanceof HttpStatus ? $e->getStatusCode() : 500
         );
 
         if($e instanceof \Fratily\Http\Message\Status\MethodNotAllowed){
