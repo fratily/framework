@@ -11,7 +11,7 @@
     <div class="code">
         <span class="file">{{ error.file }} {{ error.line }}</span>
         <pre>
-{% for line, row as error.script %}
+{% for line, row in error.script %}
 {{line}}{{ "\t"|raw }}{{ row }}
 {% endfor %}
 </pre>
@@ -22,7 +22,7 @@
         <div class="code">
             <span class="file">{{ trace.file }} {{ trace.line }}</span>
             <pre>
-{% for line, row as trace.script %}
+{% for line, row in trace.script %}
 {{line}}{{ "\t"|raw }}{{ row }}
 {% endfor %}
 </pre>
