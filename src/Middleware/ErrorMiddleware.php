@@ -106,6 +106,7 @@ class ErrorMiddleware implements MiddlewareInterface{
      * @return  ResponseInterface
      */
     protected function createErrorPageInDebugMode(\Throwable $e){
+        $response   = $this->createErrorPage($e);
         $context    = [
             "errors"    => [],
         ];
@@ -115,6 +116,8 @@ class ErrorMiddleware implements MiddlewareInterface{
         }while(($e = $e->getPrevious()) !== null);
 
         $response->getBody()->write($this->twig->render("error.twig", $context));
+
+        return $response;
     }
 
     protected function analysisError(\Throwable $e){
@@ -139,7 +142,7 @@ class ErrorMiddleware implements MiddlewareInterface{
                 "call"      => $call,
                 "file"      => $t["file"] ?? "unknown",
                 "line"      => $t["line"] ?? 0,
-                "script"    => $this->getFileContents($t["file"], $t["line"]),
+                "script"    => $this->getFileContents($t["file"] ?? null, $t["line"] ?? null),
             ];
         }
 
