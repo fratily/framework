@@ -15,6 +15,17 @@ namespace Fratily\Framework\Container;
 
 use Fratily\Container\Container;
 use Fratily\Container\ContainerConfig;
+use Fratily\Router\RouteCollector;
+use Fratily\Http\Message\Response\EmitterInterface;
+use Fratily\EventManager\EventManagerInterface;
+use Fratily\DebugBar\DebugBar;
+use Twig_Environment;
+use Twig\Environment;
+use Interop\Http\Factory\ResponseFactoryInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\SimpleCache\CacheInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  *
@@ -34,9 +45,9 @@ class CoreConfig extends ContainerConfig{
      * {@inheritdoc}
      */
     public function define(Container $container){
-        $this->defineTrait($container);
-        $this->defineType($container);
-        $this->defineController($container);
+        $this->defineTraits($container);
+        $this->defineTypes($container);
+        $this->defineControllerAndAction($container);
         $this->defineMiddleware($container);
         $this->defineDebug($container);
 
@@ -55,125 +66,85 @@ class CoreConfig extends ContainerConfig{
     }
 
     private function defineDebug(Container $container){
-        if($this->debug){
-            $container
-                ->setter(
-                    \Fratily\Framework\Traits\DumpTrait::class,
-                    "setVarCollector",
-                    $container->lazyGet("core.debugbar.dump")
-                )
-                ->setter(
-                    \Fratily\Framework\Traits\TimelineTrait::class,
-                    "setTimeCollector",
-                    $container->lazyGet("core.debugbar.timeline")
-                )
-                ->setter(
-                    \Fratily\Framework\Traits\LogTrait::class,
-                    "setMessageCollector",
-                    $container->lazyGet("core.debugbar.message")
-                )
-            ;
-        }
-
         $container
             ->set("core.debugbar", $container->lazyNew(
-                    \Fratily\DebugBar\DebugBar::class,
-                    [
-                        $container->lazyArray([
-                            "message"   => $container->lazyGet("core.debugbar.message"),
-                            "timeline"  => $container->lazyGet("core.debugbar.timeline"),
-                            "dump"      => $container->lazyGet("core.debugbar.dump"),
-                        ]),
-                    ]
-                )
-            )
+                DebugBar::class,
+                [
+                    $container->lazyArray([
+                        "message"   => $container->lazyGet("core.debugbar.message"),
+                        "timeline"  => $container->lazyGet("core.debugbar.timeline"),
+                        "dump"      => $container->lazyGet("core.debugbar.dump"),
+                    ]),
+                ]
+            ))
             ->set("core.debugbar.message", $container->lazyNew(
-                    \Fratily\DebugBar\Collector\MessageCollector::class
-                )
-            )
+                \Fratily\DebugBar\Collector\MessageCollector::class
+            ))
             ->set("core.debugbar.timeline", $container->lazyNew(
-                    \Fratily\DebugBar\Collector\TimeCollector::class
-                )
-            )
+                \Fratily\DebugBar\Collector\TimeCollector::class
+            ))
             ->set("core.debugbar.dump", $container->lazyNew(
-                    \Fratily\DebugBar\Collector\VarCollector::class
-                )
-            )
+                \Fratily\DebugBar\Collector\VarCollector::class
+            ))
         ;
     }
 
     /**
-     *
-     *
-     * @param   Container   $container
-     *
-     * @return  void
-     */
-    private function defineTrait(Container $container){
-        $container->setter(
-            \Fratily\Framework\Traits\LogTrait::class,
-            "setLogger",
-            $container->lazyGet("app.log")
-        );
-
-        $container->setter(
-            \Fratily\Framework\Traits\EventTrait::class,
-            "setEventManager",
-            $container->lazyGet("app.eventManager")
-        );
-    }
-
-    /**
-     *
+     * Fratily Frameworkで定義されているトレイトのセッターを登録する
      *
      * @param   Container   $container
      *
      * @return  void
      */
-    public function defineType(Container $container){
+    private function defineTraits(Container $container){
         $container
-            ->type(Container::class, $container)
-            ->type(
-                \Psr\Container\ContainerInterface::class,
-                $container
+            ->setters(
+                \Fratily\Framework\Traits\LogTrait::class,
+                [
+                    "setLogger"             => $container->lazyGet("app.log"),
+                    "setMessageCollector"   => $container->lazyGet("core.debugbar.message"),
+                ]
             )
-            ->type(
-                \Fratily\Router\RouteCollector::class,
-                $container->lazyGet("app.routes")
-            )
-            ->type(
-                \Interop\Http\Factory\ResponseFactoryInterface::class,
-                $container->lazyGet("app.factory.response")
-            )
-            ->type(
-                \Fratily\Http\Message\Response\EmitterInterface::class,
-                $container->lazyGet("app.response.emitter")
-            )
-            ->type(
-                \Psr\Cache\CacheItemPoolInterface::class,
-                $container->lazyGet("app.cache")
-            )
-            ->type(
-                \Psr\SimpleCache\CacheInterface::class,
-                $container->lazyGet("app.simplecache")
-            )
-            ->type(
-                \Psr\Log\LoggerInterface::class,
-                $container->lazyGet("app.log")
-            )
-            ->type(
-                \Twig_Environment::class,
-                $container->lazyGet("app.twig")
-            )
-            ->type(
-                \Fratily\EventManager\EventManagerInterface::class,
+            ->setter(
+                \Fratily\Framework\Traits\EventTrait::class,
+                "setEventManager",
                 $container->lazyGet("app.eventManager")
             )
-            ->type(
-                \Fratily\DebugBar\DebugBar::class,
-                $container->lazyGet("core.debugbar")
+            ->setter(
+                \Fratily\Framework\Traits\TimelineTrait::class,
+                "setTimeCollector",
+                $container->lazyGet("core.debugbar.timeline")
+            )
+            ->setter(
+                \Fratily\Framework\Traits\DumpTrait::class,
+                "setVarCollector",
+                $container->lazyGet("core.debugbar.dump")
             )
         ;
+    }
+
+    /**
+     * タイプ指定でのインジェクション用の値を登録
+     *
+     * @param   Container   $container
+     *
+     * @return  void
+     */
+    public function defineTypes(Container $container){
+        $container->types([
+            Container::class                => $container,
+            RouteCollector::class           => $container->lazyGet("app.routes"),
+            EmitterInterface::class         => $container->lazyGet("app.response.emitter"),
+            EventManagerInterface::class    => $container->lazyGet("app.eventManager"),
+            DebugBar::class                 => $container->lazyGet("core.debugbar"),
+            Twig_Environment::class         => $container->lazyGet("app.log"),
+            Environment::class              => $container->lazyGet("app.twig"),
+            ResponseFactoryInterface::class => $container->lazyGet("app.factory.response"),
+            ContainerInterface::class       => $container,
+            CacheItemPoolInterface::class   => $container->lazyGet("app.cache"),
+            CacheInterface::class           => $container->lazyGet("app.simplecache"),
+            LoggerInterface::class          => $container->lazyGet("app.log"),
+        ]);
     }
 
     /**
@@ -183,7 +154,7 @@ class CoreConfig extends ContainerConfig{
      *
      * @return  void
      */
-    public function defineController(Container $container){
+    public function defineControllerAndAction(Container $container){
         $container
             ->param(
                 \Fratily\Framework\Controller\Controller::class,
