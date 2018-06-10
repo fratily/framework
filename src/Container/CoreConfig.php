@@ -137,7 +137,7 @@ class CoreConfig extends ContainerConfig{
             EmitterInterface::class         => $container->lazyGet("app.response.emitter"),
             EventManagerInterface::class    => $container->lazyGet("app.eventManager"),
             DebugBar::class                 => $container->lazyGet("core.debugbar"),
-            Twig_Environment::class         => $container->lazyGet("app.log"),
+            Twig_Environment::class         => $container->lazyGet("app.twig"),
             Environment::class              => $container->lazyGet("app.twig"),
             ResponseFactoryInterface::class => $container->lazyGet("app.factory.response"),
             ContainerInterface::class       => $container,
