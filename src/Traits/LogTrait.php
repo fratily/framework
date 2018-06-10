@@ -51,7 +51,7 @@ trait LogTrait{
      * @return  void
      */
     public function setMessageCollector(MessageCollector $messageCollector){
-        $this->messageColector  = $messageCollector;
+        $this->messageCollector  = $messageCollector;
     }
 
     /**
