@@ -36,10 +36,20 @@ trait EventTrait{
         $this->eventManager = $eventManager;
     }
 
+    /**
+     * イベントを発動する
+     *
+     * @param   string|EventInterface   $event
+     * @param   mixed[] $args
+     *
+     * @return  mixed
+     */
     public function event($event, ...$args){
         if($this->eventManager !== null){
-            $this->eventManager->trigger($event, $args);
+            return $this->eventManager->trigger($event, $args);
         }
+
+        return false;
     }
 
 }
