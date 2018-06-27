@@ -125,7 +125,7 @@ class Application{
         string $name = null,
         array $data = []
     ){
-        return $this->addRoute($path, $action, $host, "GET", $name, $data);
+        return $this->addRoute($path, $action, "GET", $host, $name, $data);
     }
 
     /**
@@ -156,7 +156,7 @@ class Application{
         string $name = null,
         array $data = []
     ){
-        return $this->addRoute($path, $action, $host, "POST", $name, $data);
+        return $this->addRoute($path, $action, "POST", $host, $name, $data);
     }
 
     /**
@@ -187,7 +187,7 @@ class Application{
         string $name = null,
         array $data = []
     ){
-        return $this->addRoute($path, $action, $host, "PUT", $name, $data);
+        return $this->addRoute($path, $action, "PUT", $host, $name, $data);
     }
 
     /**
@@ -218,7 +218,7 @@ class Application{
         string $name = null,
         array $data = []
     ){
-        return $this->addRoute($path, $action, $host, "DELETE", $name, $data);
+        return $this->addRoute($path, $action, "DELETE", $host, $name, $data);
     }
 
     /**
