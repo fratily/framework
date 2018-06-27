@@ -1,6 +1,6 @@
 {
     "name": "fratily/framework",
-    "keywords": ["framework", "Fratily"],
+    "keywords": ["fratily", "framework"],
     "authors": [
         {
             "name": "Kento Oka",
@@ -13,7 +13,7 @@
         "psr/container": "^1.0",
         "psr/log": "^1.0",
         "fratily/cache": "^0.0.1",
-        "fratily/router": "^0.3.0",
+        "fratily/router": "^0.4.0",
         "fratily/http-message": "^0.1.0",
         "fratily/http-message-factory": "^0.2.0",
         "fratily/http-server-middleware": "^0.2.0",
@@ -33,7 +33,7 @@
         ]
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.0"
+        "phpunit/phpunit": "^7.0"
     },
     "autoload-dev": {
         "psr-4": {
