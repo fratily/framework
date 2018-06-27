@@ -13,7 +13,7 @@
  */
 namespace Fratily\Framework\Traits;
 
-use Fratily\DebugBar\Collector\TimeCollector;
+use Fratily\DebugBar\Panel\TimelinePanel;
 
 /**
  *
@@ -21,30 +21,30 @@ use Fratily\DebugBar\Collector\TimeCollector;
 trait TimelineTrait{
 
     /**
-     * @var TimeCollector|null
+     * @var TimelinePanel
      */
-    private $timeCollector;
+    private $panel;
 
     /**
      *
      *
-     * @param   TimeCollector   $timeCollector
+     * @param   TimelinePanel   $panel
      *
      * @return  void
      */
-    public function setTimeCollector(TimeCollector $timeCollector){
-        $this->timeCollector = $timeCollector;
+    public function setTimeCollector(TimeCollector $panel){
+        $this->panel = $panel;
     }
 
     public function startTimeline(string $name){
-        if($this->timeCollector !== null){
-            $this->timeCollector->start($name);
+        if($this->panel !== null){
+            $this->panel->start($name);
         }
     }
 
     public function endTimeline(string $name){
-        if($this->timeCollector !== null){
-            $this->timeCollector->end($name);
+        if($this->panel !== null){
+            $this->panel->end($name);
         }
     }
 }

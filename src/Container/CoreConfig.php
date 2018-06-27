@@ -71,20 +71,37 @@ class CoreConfig extends ContainerConfig{
                 DebugBar::class,
                 [
                     $container->lazyArray([
-                        "message"   => $container->lazyGet("core.debugbar.message"),
-                        "timeline"  => $container->lazyGet("core.debugbar.timeline"),
-                        "dump"      => $container->lazyGet("core.debugbar.dump"),
+                        $container->lazyGet("core.debugbar.phpinfo"),
+                        $container->lazyGet("core.debugbar.message"),
+                        $container->lazyGet("core.debugbar.timeline"),
+                        $container->lazyGet("core.debugbar.dump"),
                     ]),
                 ]
             ))
+            ->set("core.debugbar.phpinfo", $container->lazyNew(
+                \Fratily\DebugBar\Panel\PHPInfoPanel::class,
+                [
+                    "name"  => "PHP"
+                ]
+            ))
             ->set("core.debugbar.message", $container->lazyNew(
-                \Fratily\DebugBar\Collector\MessageCollector::class
+                \Fratily\DebugBar\Panel\MessagePanel::class,
+                [
+                    "name"  => "Log"
+                ]
             ))
             ->set("core.debugbar.timeline", $container->lazyNew(
-                \Fratily\DebugBar\Collector\TimeCollector::class
+                \Fratily\DebugBar\Panel\TimelinePanel::class,
+                [
+                    "name"  => "Timeline",
+                    "start" => microtime(true), // TODO: 求む！この時間をいい感じの時間にする方法
+                ]
             ))
             ->set("core.debugbar.dump", $container->lazyNew(
-                \Fratily\DebugBar\Collector\VarCollector::class
+                \Fratily\DebugBar\Panel\DumpPanel::class,
+                [
+                    "name"  => "Dump"
+                ]
             ))
         ;
     }

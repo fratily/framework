@@ -13,7 +13,7 @@
  */
 namespace Fratily\Framework\Traits;
 
-use Fratily\DebugBar\Collector\VarCollector;
+use Fratily\DebugBar\Panel\DumpPanel;
 
 /**
  *
@@ -21,19 +21,19 @@ use Fratily\DebugBar\Collector\VarCollector;
 trait DumpTrait{
 
     /**
-     * @var VarCollector|null
+     * @var DumpPanel
      */
-    private $varCollector;
+    private $panel;
 
     /**
      *
      *
-     * @param   VarCollector    $varCollector
+     * @param   DumpPanel   $panel
      *
      * @return  void
      */
-    public function setVarCollector(VarCollector $varCollector){
-        $this->varCollector = $varCollector;
+    public function setVarCollector(DumpPanel $panel){
+        $this->panel    = $panel;
     }
 
     /**
@@ -43,10 +43,10 @@ trait DumpTrait{
      * @return  void
      */
     public function dump($val){
-        if($this->varCollector !== null){
+        if($this->panel !== null){
             $trace  = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
 
-            $this->varCollector->dump(
+            $this->panel->dump(
                 $val,
                 $trace[0]["file"] ?? "unknown",
                 $trace[0]["line"] ?? 0

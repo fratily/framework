@@ -13,7 +13,7 @@
  */
 namespace Fratily\Framework\Traits;
 
-use Fratily\DebugBar\Collector\MessageCollector;
+use Fratily\DebugBar\Panel\MessagePanel;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
@@ -28,9 +28,9 @@ trait LogTrait{
     private $logger;
 
     /**
-     * @var MessageCollector|null
+     * @var MessagePanel
      */
-    private $messageCollector;
+    private $panel;
 
     /**
      *
@@ -46,12 +46,12 @@ trait LogTrait{
     /**
      *
      *
-     * @param   MessageCollector    $messageCollector
+     * @param   MessagePanel    $panel
      *
      * @return  void
      */
-    public function setMessageCollector(MessageCollector $messageCollector){
-        $this->messageCollector  = $messageCollector;
+    public function setMessageCollector(MessagePanel $panel){
+        $this->panel  = $panel;
     }
 
     /**
@@ -67,8 +67,8 @@ trait LogTrait{
             $this->logger->emergency($message, $context);
         }
 
-        if($this->messageCollector !== null){
-            $this->messageCollector->addMessage($message, LogLevel::EMERGENCY);
+        if($this->panel !== null){
+            $this->panel->addMessage($message, LogLevel::EMERGENCY);
         }
     }
 
@@ -88,8 +88,8 @@ trait LogTrait{
             $this->logger->alert($message, $context);
         }
 
-        if($this->messageCollector !== null){
-            $this->messageCollector->addMessage($message, LogLevel::ALERT);
+        if($this->panel !== null){
+            $this->panel->addMessage($message, LogLevel::ALERT);
         }
     }
 
@@ -108,8 +108,8 @@ trait LogTrait{
             $this->logger->critical($message, $context);
         }
 
-        if($this->messageCollector !== null){
-            $this->messageCollector->addMessage($message, LogLevel::CRITICAL);
+        if($this->panel !== null){
+            $this->panel->addMessage($message, LogLevel::CRITICAL);
         }
     }
 
@@ -127,8 +127,8 @@ trait LogTrait{
             $this->logger->error($message, $context);
         }
 
-        if($this->messageCollector !== null){
-            $this->messageCollector->addMessage($message, LogLevel::ERROR);
+        if($this->panel !== null){
+            $this->panel->addMessage($message, LogLevel::ERROR);
         }
     }
 
@@ -148,8 +148,8 @@ trait LogTrait{
             $this->warning($message, $context);
         }
 
-        if($this->messageCollector !== null){
-            $this->messageCollector->addMessage($message, LogLevel::WARNING);
+        if($this->panel !== null){
+            $this->panel->addMessage($message, LogLevel::WARNING);
         }
     }
 
@@ -166,8 +166,8 @@ trait LogTrait{
             $this->logger->notice($message, $context);
         }
 
-        if($this->messageCollector !== null){
-            $this->messageCollector->addMessage($message, LogLevel::NOTICE);
+        if($this->panel !== null){
+            $this->panel->addMessage($message, LogLevel::NOTICE);
         }
     }
 
@@ -186,8 +186,8 @@ trait LogTrait{
             $this->logger->info($message, $context);
         }
 
-        if($this->messageCollector !== null){
-            $this->messageCollector->addMessage($message, LogLevel::INFO);
+        if($this->panel !== null){
+            $this->panel->addMessage($message, LogLevel::INFO);
         }
     }
 
@@ -204,8 +204,8 @@ trait LogTrait{
             $this->logger->debug($message, $context);
         }
 
-        if($this->messageCollector !== null){
-            $this->messageCollector->addMessage($message, LogLevel::DEBUG);
+        if($this->panel !== null){
+            $this->panel->addMessage($message, LogLevel::DEBUG);
         }
     }
 }
