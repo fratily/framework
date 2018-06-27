@@ -383,7 +383,7 @@ class Application{
         ;
 
         if($result->found){
-            $action = $result[2]["_action"];
+            $action = $result->data["_action"];
         }else{
             $action = function(){
                 throw new \Fratily\Http\Message\Status\NotFound();
