@@ -398,7 +398,7 @@ class Application{
             ],
             $this->middlewares["before"],
             self::normalizeMiddlewares($result->data["middleware.before"] ?? []),
-            $this->createActionMiddleware($action, $result[1]),
+            $this->createActionMiddleware($action, $result->params),
             self::normalizeMiddlewares($result->data["middleware.before"] ?? []),
             $this->middlewares["after"]
         );
