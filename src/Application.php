@@ -16,7 +16,6 @@ namespace Fratily\Framework;
 use Fratily\Container\Container;
 use Fratily\Router\RouteCollector;
 use Fratily\Router\Route;
-use Fratily\Router\Router;
 use Fratily\Http\Server\RequestHandler;
 use Fratily\EventManager\EventManagerInterface;
 use Psr\Http\Message\ServerRequestInterface;
