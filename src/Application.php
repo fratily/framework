@@ -15,6 +15,7 @@ namespace Fratily\Framework;
 
 use Fratily\Container\Container;
 use Fratily\Router\RouteCollector;
+use Fratily\Router\Route;
 use Fratily\Router\Router;
 use Fratily\Http\Server\RequestHandler;
 use Fratily\EventManager\EventManagerInterface;
@@ -106,6 +107,8 @@ class Application{
      *  アクションを示す。クロージャーの場合はそれをアクションとし、
      *  文字列の場合は「コントローラークラス:アクションメソッド」として理解される。
      *  コントローラークラスはクラス名はもちろんDIコンテナに追加したサービス名も指定できる。
+     * @param   string  $host
+     *  許容するホスト名。ワイルドカード構文を用いる。
      * @param   string  $name
      *  ルーティングルール名。指定しなかった場合は適当な文字が割り当てられる。
      * @param   mixed[] $data
@@ -116,8 +119,14 @@ class Application{
      *
      * @throws  \InvalidArgumentException
      */
-    public function get(string $path, $action, string $name = null, array $data = []){
-        return $this->addRoute("GET", $path, $action, $name, $data);
+    public function get(
+        string $path,
+        $action,
+        string $host = "*",
+        string $name = null,
+        array $data = []
+    ){
+        return $this->addRoute($path, $action, $host, "GET", $name, $data);
     }
 
     /**
@@ -129,6 +138,8 @@ class Application{
      *  アクションを示す。クロージャーの場合はそれをアクションとし、
      *  文字列の場合は「コントローラークラス:アクションメソッド」として理解される。
      *  コントローラークラスはクラス名はもちろんDIコンテナに追加したサービス名も指定できる。
+     * @param   string  $host
+     *  許容するホスト名。ワイルドカード構文を用いる。
      * @param   string  $name
      *  ルーティングルール名。指定しなかった場合は適当な文字が割り当てられる。
      * @param   mixed[] $data
@@ -139,8 +150,14 @@ class Application{
      *
      * @throws  \InvalidArgumentException
      */
-    public function post(string $path, $action, string $name = null, array $data = []){
-        return $this->addRoute("POST", $path, $action, $name, $data);
+    public function post(
+        string $path,
+        $action,
+        string $host = "*",
+        string $name = null,
+        array $data = []
+    ){
+        return $this->addRoute($path, $action, $host, "POST", $name, $data);
     }
 
     /**
@@ -152,6 +169,8 @@ class Application{
      *  アクションを示す。クロージャーの場合はそれをアクションとし、
      *  文字列の場合は「コントローラークラス:アクションメソッド」として理解される。
      *  コントローラークラスはクラス名はもちろんDIコンテナに追加したサービス名も指定できる。
+     * @param   string  $host
+     *  許容するホスト名。ワイルドカード構文を用いる。
      * @param   string  $name
      *  ルーティングルール名。指定しなかった場合は適当な文字が割り当てられる。
      * @param   mixed[] $data
@@ -162,8 +181,14 @@ class Application{
      *
      * @throws  \InvalidArgumentException
      */
-    public function put(string $path, $action, string $name = null, array $data = []){
-        return $this->addRoute("PUT", $path, $action, $name, $data);
+    public function put(
+        string $path,
+        $action,
+        string $host = "*",
+        string $name = null,
+        array $data = []
+    ){
+        return $this->addRoute($path, $action, $host, "PUT", $name, $data);
     }
 
     /**
@@ -175,6 +200,8 @@ class Application{
      *  アクションを示す。クロージャーの場合はそれをアクションとし、
      *  文字列の場合は「コントローラークラス:アクションメソッド」として理解される。
      *  コントローラークラスはクラス名はもちろんDIコンテナに追加したサービス名も指定できる。
+     * @param   string  $host
+     *  許容するホスト名。ワイルドカード構文を用いる。
      * @param   string  $name
      *  ルーティングルール名。指定しなかった場合は適当な文字が割り当てられる。
      * @param   mixed[] $data
@@ -185,21 +212,29 @@ class Application{
      *
      * @throws  \InvalidArgumentException
      */
-    public function delete(string $path, $action, string $name = null, array $data = []){
-        return $this->addRoute("DELETE", $path, $action, $name, $data);
+    public function delete(
+        string $path,
+        $action,
+        string $host = "*",
+        string $name = null,
+        array $data = []
+    ){
+        return $this->addRoute($path, $action, $host, "DELETE", $name, $data);
     }
 
     /**
      * ルーティングルールを追加する
      *
-     * @param   string  $method
-     *  許容するHTTPリクエストメソッド。
      * @param   string  $path
      *  ルーティングルール
      * @param   string|\Closure $action
      *  アクションを示す。クロージャーの場合はそれをアクションとし、
      *  文字列の場合は「コントローラークラス:アクションメソッド」として理解される。
      *  コントローラークラスはクラス名はもちろんDIコンテナに追加したサービス名も指定できる。
+     * @param   string[]|string $allows
+     *  許容するHTTPメソッドリスト。
+     * @param   string  $host
+     *  許容するホスト名。ワイルドカード構文を用いる。
      * @param   string  $name
      *  ルーティングルール名。指定しなかった場合は適当な文字が割り当てられる。
      * @param   mixed[] $data
@@ -210,26 +245,25 @@ class Application{
      *
      * @throws  \InvalidArgumentException
      */
-    protected function addRoute(string $method, string $path, $action, string $name = null, array $data = []){
-        $method = strtoupper($method);
-
-        if(!in_array($method, ["GET", "POST", "PUT", "DELETE"])){
-            throw new \InvalidArgumentException();
-        }
-
+    protected function addRoute(
+        string $path,
+        $action,
+        $allows = "GET",
+        string $host = "*",
+        $name = null,
+        array $data = []
+    ){
         if(is_string($action)){
             $action = $this->parseActionString($action);
         }else if(!($action instanceof \Closure)){
             throw new \InvalidArgumentException();
         }
 
-        if($name === null || $name === ""){
-            $name   = "_rule_" . hash("md5", $path . bin2hex(random_bytes(2)));
-        }
-
         $data["_action"]    = $action;
 
-        $this->routes->addRoute($name, $path, (array)$method, $data);
+        $this->routes->add(
+            Route::newInstance($path, $host, $allows, $data)->withName($name)
+        );
 
         return $this;
     }
@@ -345,15 +379,16 @@ class Application{
      */
     protected function generateHandler(ServerRequestInterface $request){
         $result = $this->routes
-            ->createRouter($request->getMethod())
-            ->search($request->getUri()->getPath());
+            ->router($request->getUri()->getHost(), $request->getMethod())
+            ->search($request->getUri()->getPath())
+        ;
 
-        if($result[0] === Router::NOT_FOUND){
+        if($result->found){
+            $action = $result[2]["_action"];
+        }else{
             $action = function(){
                 throw new \Fratily\Http\Message\Status\NotFound();
             };
-        }else{
-            $action = $result[2]["_action"];
         }
 
         $middlewares    = array_merge(
@@ -362,9 +397,9 @@ class Application{
                 $this->container->get("core.middleware.debug"),
             ],
             $this->middlewares["before"],
-            self::normalizeMiddlewares($result[2]["middleware.before"] ?? []),
+            self::normalizeMiddlewares($result->data["middleware.before"] ?? []),
             $this->createActionMiddleware($action, $result[1]),
-            self::normalizeMiddlewares($result[2]["middleware.before"] ?? []),
+            self::normalizeMiddlewares($result->data["middleware.before"] ?? []),
             $this->middlewares["after"]
         );
 
