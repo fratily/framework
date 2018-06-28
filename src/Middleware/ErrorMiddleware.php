@@ -26,6 +26,8 @@ use Interop\Http\Factory\ResponseFactoryInterface;
  */
 class ErrorMiddleware implements MiddlewareInterface{
 
+    use \Fratily\Framework\Traits\DebugTrait;
+
     /**
      * @var Environment
      */
@@ -37,24 +39,19 @@ class ErrorMiddleware implements MiddlewareInterface{
     protected $factory;
 
     /**
-     * @var bool
-     */
-    protected $debug;
-
-    /**
      * Constructor
      *
      * @param   Environment $twig
+     *  エラー描画用Twig
      * @param   ResponseFactoryInterface    $factory
+     *  レスポンスファクトリ
      */
     public function __construct(
         Environment $twig,
-        ResponseFactoryInterface $factory,
-        bool $debug
+        ResponseFactoryInterface $factory
     ){
         $this->twig     = $twig;
         $this->factory  = $factory;
-        $this->debug    = $debug;
     }
 
     /**
@@ -67,7 +64,7 @@ class ErrorMiddleware implements MiddlewareInterface{
         try{
             $response   = $handler->handle($request);
         }catch(\Throwable $e){
-            $response   = $this->debug
+            $response   = $this->isDebug()
                 ? $this->createErrorPageInDebugMode($e)
                 : $this->createErrorPage($e)
             ;
