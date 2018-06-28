@@ -19,19 +19,12 @@ use Fratily\Http\Factory\ResponseFactory;
 use Fratily\Http\Message\Response\Emitter;
 use Fratily\Container\Container;
 use Fratily\Container\ContainerConfig;
-use Fratily\Cache\SimpleCache;
 use Fratily\EventManager\EventManager;
-use Psr\Cache\CacheItemPoolInterface;
 
 /**
  *
  */
 class AppConfig extends ContainerConfig{
-
-    /**
-     * @var CacheItemPoolInterface
-     */
-    private $cache;
 
     /**
      * @var bool
@@ -44,8 +37,7 @@ class AppConfig extends ContainerConfig{
      * @param   CacheItemPoolInterface  $cache
      * @param   bool    $debug
      */
-    public function __construct(CacheItemPoolInterface $cache, bool $debug){
-        $this->cache    = $cache;
+    public function __construct(bool $debug){
         $this->debug    = $debug;
     }
 
@@ -53,29 +45,13 @@ class AppConfig extends ContainerConfig{
      * {@inheritdoc}
      */
     public function define(Container $container){
-        $container->set("app", $container->lazyNew(
-            Application::class,
-            [
-                "debug"     => $container->lazyValue("app.debug")
-            ]
-        ));
-
-        $container->set("app.cache", $this->cache);
-        $container->set("app.simplecache", $container->lazyNew(SimpleCache::class));
-        $container->set("app.routes", $container->lazyNew(RouteCollector::class));
-        $container->set("app.factory.response", $container->lazyNew(ResponseFactory::class));
-        $container->set("app.response.emitter", $container->lazyNew(Emitter::class));
-        $container->set("app.eventManager", $container->lazyNew(EventManager::class));
-
-        $container->value("app.debug", $this->debug);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function modify(Container $container){
-        $app    = $container->get("app");
-
-        // ミドルウェアを追加する
+        $container
+            ->set("app", $container->lazyNew(Application::class))
+            ->set("app.routes", $container->lazyNew(RouteCollector::class))
+            ->set("app.factory.response", $container->lazyNew(ResponseFactory::class))
+            ->set("app.response.emitter", $container->lazyNew(Emitter::class))
+            ->set("app.eventManager", $container->lazyNew(EventManager::class))
+            ->value("app.debug", $this->debug)
+        ;
     }
 }
