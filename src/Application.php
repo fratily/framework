@@ -81,7 +81,7 @@ class Application{
                 new ContainerConfig\MiddlewareConfig()
             ],
             $debug ? [new ContainerConfig\DebugConfig($startedAt)] : [],
-            [new Container\CoreConfig()]
+            [new ContainerConfig\CoreConfig()]
         );
 
         $start      = microtime(true);
