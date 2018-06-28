@@ -32,8 +32,8 @@ trait TimelineTrait{
      *
      * @return  void
      */
-    public function setTimeCollector(TimeCollector $panel){
-        $this->panel = $panel;
+    public function setTimelinePanel(TimelinePanel $panel){
+        $this->panel    = $panel;
     }
 
     public function startTimeline(string $name){

@@ -13,7 +13,7 @@
  */
 namespace Fratily\Framework\Traits;
 
-use Fratily\DebugBar\Panel\MessagePanel;
+use Fratily\Framework\Debug\Panel\MessagePanel;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
@@ -50,8 +50,8 @@ trait LogTrait{
      *
      * @return  void
      */
-    public function setMessageCollector(MessagePanel $panel){
-        $this->panel  = $panel;
+    public function setMessagePanel(MessagePanel $panel){
+        $this->panel    = $panel;
     }
 
     /**

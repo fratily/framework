@@ -26,6 +26,7 @@ abstract class Controller{
     use \Fratily\Framework\Traits\DumpTrait;
     use \Fratily\Framework\Traits\LogTrait;
     use \Fratily\Framework\Traits\EventTrait;
+    use \Fratily\Framework\Traits\DebugTrait;
 
     /**
      * @var ResponseFactoryInterface
@@ -37,8 +38,6 @@ abstract class Controller{
      */
     private $twig;
 
-    private $debug;
-
     /**
      * Constructor
      *
@@ -46,21 +45,10 @@ abstract class Controller{
      */
     public function __construct(
         ResponseFactoryInterface $factory,
-        Environment $twig,
-        bool $debug
+        Environment $twig
     ){
         $this->factory  = $factory;
         $this->twig     = $twig;
-        $this->debug    = $debug;
-    }
-
-    /**
-     * アプリケーションがデバッグモードか確認する
-     *
-     * @return  void
-     */
-    protected function isDebug(){
-        return $this->debug;
     }
 
     /**

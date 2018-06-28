@@ -13,6 +13,7 @@
  */
 namespace Fratily\Framework;
 
+use Fratily\Container\ContainerFactory;
 use Fratily\Container\Container;
 use Fratily\Router\RouteCollector;
 use Fratily\Router\Route;
@@ -27,12 +28,9 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 class Application{
 
-    /**
-     * @var int
-     */
-    private $startedAt;
-
-    private $debug;
+    use Traits\DebugTrait;
+    use Traits\TimelineTrait;
+    use Traits\LogTrait;
 
     /**
      * @var Container
@@ -58,6 +56,59 @@ class Application{
     ];
 
     /**
+     * アプリケーションインスタンスを生成する
+     *
+     * @param   mixed[] $containerConfig
+     *  コンテナ構築クラスの配列
+     * @param   bool    $debug
+     *  アプリケーションをデバッグモードで起動するか
+     *
+     * @return  static
+     *
+     * @throws  LogicException
+     */
+    public static function create(array $containerConfig, bool $debug){
+        $startedAt    = microtime(true);
+        $timeline           = [];
+        $containerConfig    = array_merge(
+            [new Container\AppConfig($debug)],
+            $containerConfig,
+            [
+                new Container\TraitConfig(),
+                new Container\TypeConfig(),
+                new Container\ActionConfig(),
+                new Container\MiddlewareConfig()
+            ],
+            $debug ? [new Container\DebugConfig($startedAt)] : [],
+            [new Container\CoreConfig()]
+        );
+
+        $start      = microtime(true);
+        $container  = (new ContainerFactory())->createWithConfig($containerConfig, true);
+        $end        = microtime(true);
+
+        $timeline["container.factory"]  = [$start, $end];
+
+        $start  = microtime(true);
+        $app    = $container->get("app");
+        $end    = microtime(true);
+
+        $timeline["app.construct"]  = [$start, $end];
+
+        if(!($app instanceof static)){
+            throw new \LogicException;
+        }
+
+        if($debug){
+            foreach($timeline as $name => $time){
+                $container->get("core.debugbar.timeline")->addLine($name, $time[0], $time[1]);
+            }
+        }
+
+        return $app;
+    }
+
+    /**
      * ミドルウェアリストを正しくする
      *
      * @param   MiddlewareInterface[]|MiddlewareInterface|null  $middlewares
@@ -80,18 +131,17 @@ class Application{
      * Constructor
      *
      * @param   Container   $container
+     *  アプリケーションで使用するDIコンテナインスタンス
      * @param   EventManagetInterface   $eventMng
+     *  アプリケーションで使用するイベントマネージャインスタンス
      * @param   RouteCollector  $routes
-     * @param   bool    $debug
+     *  アプリケーションで使用するルーティングルール定義インスタンス
      */
     public function __construct(
         Container $container,
         EventManagerInterface $eventMng,
-        RouteCollector $routes,
-        bool $debug = false
+        RouteCollector $routes
     ){
-        $this->startedAt    = time();
-        $this->debug        = $debug;
         $this->container    = $container;
         $this->eventMng     = $eventMng;
         $this->routes       = $routes;
@@ -377,24 +427,32 @@ class Application{
      * @return  RequestHandlerInterface
      */
     protected function generateHandler(ServerRequestInterface $request){
-        $result = $this->routes
+        $this->startTimeline("handler.generate");
+
+        $this->startTimeline("router.generate");
+        $router = $this->routes
             ->router($request->getUri()->getHost(), $request->getMethod())
-            ->search($request->getUri()->getPath())
         ;
+        $this->endTimeline("router.generate");
+
+        $this->startTimeline("router.routing");
+        $result = $router->search($request->getUri()->getPath());
+        $this->endTimeline("router.routing");
 
         if($result->found){
+            $this->info("Match on route {$result->name}.");
+
             $action = $result->data["_action"];
         }else{
+            $this->info("There were no matching routes");
+
             $action = function(){
                 throw new \Fratily\Http\Message\Status\NotFound();
             };
         }
 
         $middlewares    = array_merge(
-            [
-                $this->container->get("core.middleware.error"),
-                $this->container->get("core.middleware.debug"),
-            ],
+            $this->createWrapperMiddlewares(),
             $this->middlewares["before"],
             self::normalizeMiddlewares($result->data["middleware.before"] ?? []),
             $this->createActionMiddleware($action, $result->params),
@@ -407,6 +465,8 @@ class Application{
         foreach($middlewares as $middleware){
             $handler->append($middleware);
         }
+
+        $this->endTimeline("handler.generate");
 
         return $handler;
     }
@@ -435,10 +495,12 @@ class Application{
      *
      * @return  MiddlewareInterface[]
      */
-    private function createDebugMiddlewares(){
+    private function createWrapperMiddlewares(){
         $middlewares    = [];
 
-        if($this->debug){
+        $middlewares[]  = $this->container->get("core.middleware.error");
+
+        if($this->isDebug()){
             $middlewares[]  = $this->container->get("core.middleware.debug");
         }
 

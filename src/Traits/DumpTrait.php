@@ -32,7 +32,7 @@ trait DumpTrait{
      *
      * @return  void
      */
-    public function setVarCollector(DumpPanel $panel){
+    public function setDumpPanel(DumpPanel $panel){
         $this->panel    = $panel;
     }
 

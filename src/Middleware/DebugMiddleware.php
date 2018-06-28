@@ -25,25 +25,21 @@ use Psr\Http\Server\MiddlewareInterface;
  */
 class DebugMiddleware implements MiddlewareInterface{
 
+    use \Fratily\Framework\Traits\DebugTrait;
+
     /**
      * @var DebugBar
      */
     private $debugbar;
 
     /**
-     * @var debug
-     */
-    private $debug;
-
-    /**
      * Constructor
      *
-     * @param   Environment $twig
-     * @param   ResponseFactoryInterface    $factory
+     * @param   DebugBar    $debugbar
+     *  デバッグバーを埋め込むためのインスタンス
      */
-    public function __construct(DebugBar $debugbar, bool $debug){
+    public function __construct(DebugBar $debugbar){
         $this->debugbar = $debugbar;
-        $this->debug    = $debug;
     }
 
     /**
@@ -53,9 +49,9 @@ class DebugMiddleware implements MiddlewareInterface{
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface{
-        $response   = $handler->handle($request->withAttribute("fratily.debug", true));
+        $response   = $handler->handle($request);
 
-        if($this->debug){
+        if($this->isDebug()){
             $response   = $response->withBody(
                 $this->addDebugToolBar($response->getBody())
             );
