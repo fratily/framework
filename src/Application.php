@@ -13,6 +13,7 @@
  */
 namespace Fratily\Framework;
 
+use Fratily\Framework\Container as ContainerConfig;
 use Fratily\Container\ContainerFactory;
 use Fratily\Container\Container;
 use Fratily\Router\RouteCollector;
@@ -71,15 +72,15 @@ class Application{
         $startedAt    = microtime(true);
         $timeline           = [];
         $containerConfig    = array_merge(
-            [new Container\AppConfig($debug)],
+            [new ContainerConfig\AppConfig($debug)],
             $containerConfig,
             [
-                new Container\TraitConfig(),
-                new Container\TypeConfig(),
-                new Container\ActionConfig(),
-                new Container\MiddlewareConfig()
+                new ContainerConfig\TraitConfig(),
+                new ContainerConfig\TypeConfig(),
+                new ContainerConfig\ActionConfig(),
+                new ContainerConfig\MiddlewareConfig()
             ],
-            $debug ? [new Container\DebugConfig($startedAt)] : [],
+            $debug ? [new ContainerConfig\DebugConfig($startedAt)] : [],
             [new Container\CoreConfig()]
         );
 
