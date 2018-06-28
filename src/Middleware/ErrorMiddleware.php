@@ -183,35 +183,4 @@ class ErrorMiddleware implements MiddlewareInterface{
 
         return $contents;
     }
-
-    /**
-     * 変数の値をダンプ用文字列に変換する
-     *
-     * @param   mixed   $value
-     *
-     * @return  string
-     */
-    protected function getDumpString($value){
-        switch(gettype($value)){
-            case "boolean":
-                return $value ? "TRUE" : "FALSE";
-            case "integer":
-            case "double":
-                return (string)$value;
-            case "string":
-                return "'{$value}'";
-            case "array":
-                return "Array(" . count($value) . ")";
-            case "object":
-                return get_class($value);
-            case "resource":
-                return "resource(" . get_resource_type($value) . ")";
-            case "resource (closed)":
-                return "closed resource(" . get_resource_type($value) . ")";
-            case "NULL":
-                return "NULL";
-        }
-
-        return "unknown type";
-    }
 }
