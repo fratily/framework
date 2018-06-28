@@ -48,7 +48,7 @@ class MessagePanel extends AbstractPanel{
     /**
      * @var TableBlock
      */
-    private $tabel;
+    private $table;
 
     /**
      * @var MetricsBlock
@@ -64,7 +64,7 @@ class MessagePanel extends AbstractPanel{
         $this->metrics  = new MetricsBlock();
         $this->table    = new TableBlock(["Level", "Message"]);
 
-        parent::__construct($name, [$this->metrics, $this->tabel]);
+        parent::__construct($name, [$this->metrics, $this->table]);
     }
 
     /**
@@ -80,7 +80,7 @@ class MessagePanel extends AbstractPanel{
             return;
         }
 
-        $this->tabel->addRow(self::LEVEL[$level], $message);
+        $this->table->addRow(self::LEVEL[$level], $message);
 
         $this->count[$level]++;
 
