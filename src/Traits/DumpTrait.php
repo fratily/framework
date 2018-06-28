@@ -23,7 +23,7 @@ trait DumpTrait{
     /**
      * @var DumpPanel
      */
-    private $panel;
+    private $dumpPanel;
 
     /**
      *
@@ -33,7 +33,7 @@ trait DumpTrait{
      * @return  void
      */
     public function setDumpPanel(DumpPanel $panel){
-        $this->panel    = $panel;
+        $this->dumpPanel    = $panel;
     }
 
     /**
@@ -43,10 +43,10 @@ trait DumpTrait{
      * @return  void
      */
     public function dump($val){
-        if($this->panel !== null){
+        if($this->dumpPanel !== null){
             $trace  = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
 
-            $this->panel->dump(
+            $this->dumpPanel->dump(
                 $val,
                 $trace[0]["file"] ?? "unknown",
                 $trace[0]["line"] ?? 0

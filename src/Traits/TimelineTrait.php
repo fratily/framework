@@ -23,7 +23,7 @@ trait TimelineTrait{
     /**
      * @var TimelinePanel
      */
-    private $panel;
+    private $timelinePanel;
 
     /**
      *
@@ -33,18 +33,18 @@ trait TimelineTrait{
      * @return  void
      */
     public function setTimelinePanel(TimelinePanel $panel){
-        $this->panel    = $panel;
+        $this->timelinePanel    = $panel;
     }
 
     public function startTimeline(string $name){
-        if($this->panel !== null){
-            $this->panel->start($name);
+        if($this->timelinePanel !== null){
+            $this->timelinePanel->start($name);
         }
     }
 
     public function endTimeline(string $name){
-        if($this->panel !== null){
-            $this->panel->end($name);
+        if($this->timelinePanel !== null){
+            $this->timelinePanel->end($name);
         }
     }
 }

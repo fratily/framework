@@ -30,7 +30,7 @@ trait LogTrait{
     /**
      * @var MessagePanel
      */
-    private $panel;
+    private $messagePanel;
 
     /**
      *
@@ -51,7 +51,7 @@ trait LogTrait{
      * @return  void
      */
     public function setMessagePanel(MessagePanel $panel){
-        $this->panel    = $panel;
+        $this->messagePanel = $panel;
     }
 
     /**
@@ -67,8 +67,8 @@ trait LogTrait{
             $this->logger->emergency($message, $context);
         }
 
-        if($this->panel !== null){
-            $this->panel->addMessage($message, LogLevel::EMERGENCY);
+        if($this->messagePanel !== null){
+            $this->messagePanel->addMessage($message, LogLevel::EMERGENCY);
         }
     }
 
@@ -88,8 +88,8 @@ trait LogTrait{
             $this->logger->alert($message, $context);
         }
 
-        if($this->panel !== null){
-            $this->panel->addMessage($message, LogLevel::ALERT);
+        if($this->messagePanel !== null){
+            $this->messagePanel->addMessage($message, LogLevel::ALERT);
         }
     }
 
@@ -108,8 +108,8 @@ trait LogTrait{
             $this->logger->critical($message, $context);
         }
 
-        if($this->panel !== null){
-            $this->panel->addMessage($message, LogLevel::CRITICAL);
+        if($this->messagePanel !== null){
+            $this->messagePanel->addMessage($message, LogLevel::CRITICAL);
         }
     }
 
@@ -127,8 +127,8 @@ trait LogTrait{
             $this->logger->error($message, $context);
         }
 
-        if($this->panel !== null){
-            $this->panel->addMessage($message, LogLevel::ERROR);
+        if($this->messagePanel !== null){
+            $this->messagePanel->addMessage($message, LogLevel::ERROR);
         }
     }
 
@@ -148,8 +148,8 @@ trait LogTrait{
             $this->warning($message, $context);
         }
 
-        if($this->panel !== null){
-            $this->panel->addMessage($message, LogLevel::WARNING);
+        if($this->messagePanel !== null){
+            $this->messagePanel->addMessage($message, LogLevel::WARNING);
         }
     }
 
@@ -166,8 +166,8 @@ trait LogTrait{
             $this->logger->notice($message, $context);
         }
 
-        if($this->panel !== null){
-            $this->panel->addMessage($message, LogLevel::NOTICE);
+        if($this->messagePanel !== null){
+            $this->messagePanel->addMessage($message, LogLevel::NOTICE);
         }
     }
 
@@ -186,8 +186,8 @@ trait LogTrait{
             $this->logger->info($message, $context);
         }
 
-        if($this->panel !== null){
-            $this->panel->addMessage($message, LogLevel::INFO);
+        if($this->messagePanel !== null){
+            $this->messagePanel->addMessage($message, LogLevel::INFO);
         }
     }
 
@@ -204,8 +204,8 @@ trait LogTrait{
             $this->logger->debug($message, $context);
         }
 
-        if($this->panel !== null){
-            $this->panel->addMessage($message, LogLevel::DEBUG);
+        if($this->messagePanel !== null){
+            $this->messagePanel->addMessage($message, LogLevel::DEBUG);
         }
     }
 }
