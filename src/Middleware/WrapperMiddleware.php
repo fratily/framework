@@ -15,7 +15,10 @@ namespace Fratily\Framework\Middleware;
 
 use Fratily\DebugBar\Panel\TimelinePanel;
 use Fratily\EventManager\EventManagerInterface;
-
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 
 /**
