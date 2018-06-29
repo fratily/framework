@@ -18,6 +18,7 @@ use Fratily\Framework\Traits\DumpTrait;
 use Fratily\Framework\Traits\TimelineTrait;
 use Fratily\Framework\Middleware\DebugMiddleware;
 use Fratily\Framework\Debug\Panel\MessagePanel;
+use Fratily\Framework\Middleware\WrapperMiddleware;
 use Fratily\DebugBar\DebugBar;
 use Fratily\DebugBar\Panel\PHPInfoPanel;
 use Fratily\DebugBar\Panel\TimelinePanel;
@@ -98,6 +99,11 @@ class DebugConfig extends ContainerConfig{
             )
             ->setter(
                 TimelineTrait::class,
+                "setTimelinePanel",
+                $container->lazyGet("core.debugbar.timeline")
+            )
+            ->setter(
+                WrapperMiddleware::class,
                 "setTimelinePanel",
                 $container->lazyGet("core.debugbar.timeline")
             )

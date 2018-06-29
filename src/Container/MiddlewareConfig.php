@@ -14,6 +14,7 @@
 namespace Fratily\Framework\Container;
 
 use Fratily\Framework\Middleware\ActionMiddleware;
+use Fratily\Framework\Middleware\WrapperMiddleware;
 use Fratily\Framework\Middleware\ErrorMiddleware;
 use Fratily\Container\Container;
 use Fratily\Container\ContainerConfig;
@@ -36,6 +37,9 @@ class MiddlewareConfig extends ContainerConfig{
                         "msg"   => "Action is undefined.",
                     ],
                 ]
+            ))
+            ->set("core.middleware.wrapper", $container->lazyNew(
+                WrapperMiddleware::class
             ))
             ->set("core.middleware.error", $container->lazyNew(
                 ErrorMiddleware::class,
