@@ -428,8 +428,6 @@ class Application{
      * @return  RequestHandlerInterface
      */
     protected function generateHandler(ServerRequestInterface $request){
-        $this->startTimeline("handler.generate");
-
         $this->startTimeline("router.generate");
         $router = $this->routes
             ->router($request->getUri()->getHost(), $request->getMethod())
@@ -460,6 +458,8 @@ class Application{
             self::normalizeMiddlewares($result->data["middleware.before"] ?? []),
             $this->middlewares["after"]
         );
+
+        $this->startTimeline("handler.generate");
 
         $handler    = $this->container->newInstance(RequestHandler::class);
 
