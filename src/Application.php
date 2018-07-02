@@ -450,6 +450,7 @@ class Application{
             };
         }
 
+        $this->startTimeline("handler.createMiddlewareList");
         $middlewares    = array_merge(
             $this->createWrapperMiddlewares(),
             $this->middlewares["before"],
@@ -458,6 +459,7 @@ class Application{
             self::normalizeMiddlewares($result->data["middleware.before"] ?? []),
             $this->middlewares["after"]
         );
+        $this->endTimeline("handler.createMiddlewareList");
 
         $this->startTimeline("handler.generate");
 
@@ -504,6 +506,8 @@ class Application{
         if($this->isDebug()){
             $middlewares[]  = $this->container->get("core.middleware.debug");
         }
+
+        $middlewares[]  = $this->container->get("core.middleware.wrapper");
 
         return $middlewares;
     }
