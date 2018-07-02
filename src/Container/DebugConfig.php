@@ -16,6 +16,7 @@ namespace Fratily\Framework\Container;
 use Fratily\Framework\Traits\LogTrait;
 use Fratily\Framework\Traits\DumpTrait;
 use Fratily\Framework\Traits\TimelineTrait;
+use Fratily\Framework\Traits\PerformanceTrait;
 use Fratily\Framework\Middleware\DebugMiddleware;
 use Fratily\Framework\Debug\Panel\MessagePanel;
 use Fratily\Framework\Debug\Panel\PerformancePanel;
