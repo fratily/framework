@@ -13,7 +13,7 @@
  */
 namespace Fratily\Framework\Middleware;
 
-use Fratily\DebugBar\Panel\TimelinePanel;
+use Fratily\Framework\Debug\Panel\PerformancePanel;
 use Fratily\EventManager\EventManagerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -34,9 +34,9 @@ class WrapperMiddleware implements MiddlewareInterface{
     private $eventMng;
 
     /**
-     * @var TimelinePanel
+     * @var PerformancePanel
      */
-    private $timeline;
+    private $performance;
 
     /**
      * Constructor
@@ -48,14 +48,14 @@ class WrapperMiddleware implements MiddlewareInterface{
     }
 
     /**
-     * タイムラインパネルをセットする
      *
-     * @param   TimelinePanel   $timeline
+     *
+     * @param   PerformancePanel    $timeline
      *
      * @return  void
      */
-    public function setTimelinePanel(TimelinePanel $timeline){
-        $this->timeline = $timeline;
+    public function setPerformancePanel(PerformancePanel $timeline){
+        $this->performance  = $timeline;
     }
 
     /**
@@ -67,8 +67,8 @@ class WrapperMiddleware implements MiddlewareInterface{
     ): ResponseInterface{
         $response   = $handler->handle($request);
 
-        if($this->timeline !== null){
-            $this->timeline->setEndTime(microtime(true));
+        if($this->performance !== null){
+            $this->performance->setEndTime(microtime(true));
         }
 
         return $response;
