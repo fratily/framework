@@ -32,7 +32,7 @@ trait PerformanceTrait{
      *
      * @return  void
      */
-    public function setTimelinePanel(PerformancePanel $panel){
+    public function setPerformancePanel(PerformancePanel $panel){
         $this->performancePanel = $panel;
     }
 
