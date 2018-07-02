@@ -69,32 +69,30 @@ class Application{
      * @throws  LogicException
      */
     public static function create(array $containerConfig, bool $debug){
-        $startedAt    = microtime(true);
-        $timeline           = [];
-        $containerConfig    = array_merge(
-            [new ContainerConfig\AppConfig($debug)],
-            $containerConfig,
-            [
-                new ContainerConfig\TraitConfig(),
-                new ContainerConfig\TypeConfig(),
-                new ContainerConfig\ActionConfig(),
-                new ContainerConfig\MiddlewareConfig()
-            ],
-            $debug ? [new ContainerConfig\DebugConfig($startedAt)] : [],
-            [new ContainerConfig\CoreConfig()]
-        );
+        $startedAt  = microtime(true);
+        $timeline   = [];
 
+        // Container initialize
+        $start              = microtime(true);
+        $containerConfig    = static::createContainerConfigList($containerConfig, $debug, $startedAt);
+        $containerFactory   = new ContainerFactory();
+        $end                = microtime(true);
+
+        $timeline["container.initialize"]   = [$start, $end];
+
+        // Create container
         $start      = microtime(true);
-        $container  = (new ContainerFactory())->createWithConfig($containerConfig, true);
+        $container  = $containerFactory->createWithConfig($containerConfig, true);
         $end        = microtime(true);
 
         $timeline["container.factory"]  = [$start, $end];
 
+        // Create Application
         $start  = microtime(true);
         $app    = $container->get("app");
         $end    = microtime(true);
 
-        $timeline["app.construct"]  = [$start, $end];
+        $timeline["app.create"]  = [$start, $end];
 
         if(!($app instanceof static)){
             throw new \LogicException;
@@ -107,6 +105,32 @@ class Application{
         }
 
         return $app;
+    }
+
+    /**
+     * コンテナ初期化用のクラスリストを作成する
+     *
+     * @param   mixed[] $conf
+     *  追加で指定する初期化用クラス
+     * @param   bool    $debug
+     *  デバッグモードが有効か
+     * @param   float   $startedAt
+     *  開始時刻
+     * @return  mixed[]
+     */
+    private static function createContainerConfigList(array $conf, bool $debug, float $startedAt){
+        return array_merge(
+            [new ContainerConfig\AppConfig($debug)],
+            $conf,
+            [
+                new ContainerConfig\TraitConfig(),
+                new ContainerConfig\TypeConfig(),
+                new ContainerConfig\ActionConfig(),
+                new ContainerConfig\MiddlewareConfig()
+            ],
+            $debug ? [new ContainerConfig\DebugConfig($startedAt)] : [],
+            [new ContainerConfig\CoreConfig()]
+        );
     }
 
     /**
@@ -428,14 +452,20 @@ class Application{
      * @return  RequestHandlerInterface
      */
     protected function generateHandler(ServerRequestInterface $request){
-        $this->startTimeline("router.generate");
+        // Create router
+        $this->startTimeline("router.create");
+
         $router = $this->routes
             ->router($request->getUri()->getHost(), $request->getMethod())
         ;
+
         $this->endTimeline("router.generate");
 
+        // Routing
         $this->startTimeline("router.routing");
+
         $result = $router->search($request->getUri()->getPath());
+
         $this->endTimeline("router.routing");
 
         if($result->found){
@@ -450,7 +480,9 @@ class Application{
             };
         }
 
-        $this->startTimeline("handler.createMiddlewareList");
+        // Initialize handler
+        $this->startTimeline("handler.initialize");
+
         $middlewares    = array_merge(
             $this->createWrapperMiddlewares(),
             $this->middlewares["before"],
@@ -459,9 +491,11 @@ class Application{
             self::normalizeMiddlewares($result->data["middleware.before"] ?? []),
             $this->middlewares["after"]
         );
-        $this->endTimeline("handler.createMiddlewareList");
 
-        $this->startTimeline("handler.generate");
+        $this->endTimeline("handler.initialize");
+
+        // Create handler
+        $this->startTimeline("handler.create");
 
         $handler    = $this->container->newInstance(RequestHandler::class);
 
@@ -469,7 +503,7 @@ class Application{
             $handler->append($middleware);
         }
 
-        $this->endTimeline("handler.generate");
+        $this->endTimeline("handler.create");
 
         return $handler;
     }
