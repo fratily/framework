@@ -14,7 +14,6 @@
 namespace Fratily\Framework;
 
 use Fratily\Http\Message\Response\EmitterInterface;
-use Fratily\EventManager\EventManagerInterface;
 use Fratily\EventManager\Event;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -26,7 +25,6 @@ use Psr\Http\Server\RequestHandlerInterface;
 class Response{
 
     use Traits\EventTrait;
-    use Traits\PerformanceTrait;
 
     /**
      * @var ServerRequestInterface
@@ -86,18 +84,10 @@ class Response{
      */
     public function send(){
         if(!$this->send){
-            $this->startTimeline("response.handle");
-
             $response   = $this->handle();
 
-            $this->endTimeline("response.handle");
-
             if($response !== null){
-                $this->startTimeline("response.emit");
-
                 $this->emit($response);
-
-                $this->endTimeline("response.emit");
             }
 
             $this->send = true;
