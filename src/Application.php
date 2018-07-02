@@ -88,6 +88,7 @@ class Application{
         $timeline["container.create"]  = [$start, $end];
 
         // Create Application
+        // コンテナのmodifyでappを触っているとすごく速くなる
         $start  = microtime(true);
         $app    = $container->get("app");
         $end    = microtime(true);
@@ -432,14 +433,26 @@ class Application{
      * @return  Response
      */
     public function generateResponse(){
+        // Create request
+        $this->startTimeline("request.create");
+
         $request    = $this->container->get("app.request")
             ->withAttribute("app.debug", $this->debug)
         ;
 
-        return $this->container->newInstance(Response::class, [
+        $this->endTimeline("request.create");
+
+        // Create response
+        $this->startTimeline("response.create");
+
+        $response   = $this->container->newInstance(Response::class, [
             "request"   => $request,
             "handler"   => $this->generateHandler($request),
         ]);
+
+        $this->endTimeline("response.create");
+
+        return $response;
     }
 
     /**
