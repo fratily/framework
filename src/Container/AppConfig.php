@@ -15,6 +15,7 @@ namespace Fratily\Framework\Container;
 
 use Fratily\Framework\Application;
 use Fratily\Router\RouteCollector;
+use Fratily\Http\Factory\ServerRequestFactory;
 use Fratily\Http\Factory\ResponseFactory;
 use Fratily\Http\Message\Response\Emitter;
 use Fratily\Container\Container;
@@ -48,6 +49,7 @@ class AppConfig extends ContainerConfig{
         $container
             ->set("app", $container->lazyNew(Application::class))
             ->set("app.routes", $container->lazyNew(RouteCollector::class))
+            ->set("app.factory.request", $container->lazyNew(ServerRequestFactory::class))
             ->set("app.factory.response", $container->lazyNew(ResponseFactory::class))
             ->set("app.response.emitter", $container->lazyNew(Emitter::class))
             ->set("app.eventManager", $container->lazyNew(EventManager::class))
