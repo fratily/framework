@@ -102,7 +102,7 @@ class Application{
 
         if($debug){
             foreach($timeline as $name => $time){
-                $container->get("core.debugbar.timeline")->addLine($name, $time[0], $time[1]);
+                $container->get("core.debugbar.performance")->addLine($name, $time[0], $time[1]);
             }
         }
 
