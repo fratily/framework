@@ -18,6 +18,7 @@ use Fratily\Framework\Traits\DumpTrait;
 use Fratily\Framework\Traits\TimelineTrait;
 use Fratily\Framework\Middleware\DebugMiddleware;
 use Fratily\Framework\Debug\Panel\MessagePanel;
+use Fratily\Framework\Debug\Panel\PerformancePanel;
 use Fratily\Framework\Middleware\WrapperMiddleware;
 use Fratily\DebugBar\DebugBar;
 use Fratily\DebugBar\Panel\PHPInfoPanel;
@@ -56,8 +57,8 @@ class DebugConfig extends ContainerConfig{
                 [
                     $container->lazyArray([
                         $container->lazyGet("core.debugbar.phpinfo"),
+                        $container->lazyGet("core.debugbar.performance"),
                         $container->lazyGet("core.debugbar.message"),
-                        $container->lazyGet("core.debugbar.timeline"),
                         $container->lazyGet("core.debugbar.dump"),
                     ]),
                 ]
@@ -72,6 +73,13 @@ class DebugConfig extends ContainerConfig{
                 MessagePanel::class,
                 [
                     "name"  => "Log"
+                ]
+            ))
+            ->set("core.debugbar.performance", $container->lazyNew(
+                PerformancePanel::class,
+                [
+                    "name"  => "Performance",
+                    "start" => $this->startedAt,
                 ]
             ))
             ->set("core.debugbar.timeline", $container->lazyNew(
@@ -96,6 +104,11 @@ class DebugConfig extends ContainerConfig{
                 LogTrait::class,
                 "setMessagePanel",
                 $container->lazyGet("core.debugbar.message")
+            )
+            ->setter(
+                PerformanceTrait::class,
+                "setPerformancePanel",
+                $container->lazyGet("core.debugbar.performance")
             )
             ->setter(
                 TimelineTrait::class,

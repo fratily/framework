@@ -22,7 +22,7 @@ use Twig\Environment;
  */
 abstract class Controller{
 
-    use \Fratily\Framework\Traits\TimelineTrait;
+    use \Fratily\Framework\Traits\PerformanceTrait;
     use \Fratily\Framework\Traits\DumpTrait;
     use \Fratily\Framework\Traits\LogTrait;
     use \Fratily\Framework\Traits\EventTrait;

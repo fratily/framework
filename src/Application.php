@@ -30,7 +30,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 class Application{
 
     use Traits\DebugTrait;
-    use Traits\TimelineTrait;
+    use Traits\PerformanceTrait;
     use Traits\LogTrait;
 
     /**
