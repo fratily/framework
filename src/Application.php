@@ -446,7 +446,6 @@ class Application{
         $this->startTimeline("response.create");
 
         $response   = $this->container->newInstance(Response::class, [
-            "request"   => $request,
             "handler"   => $this->generateHandler($request),
         ]);
 

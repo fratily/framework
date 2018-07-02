@@ -24,6 +24,7 @@ use Interop\Http\Factory\ResponseFactoryInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\SimpleCache\CacheInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -46,6 +47,7 @@ class TypeConfig extends ContainerConfig{
             ContainerInterface::class       => $container,
             CacheItemPoolInterface::class   => $container->lazyGet("app.cache"),
             CacheInterface::class           => $container->lazyGet("app.simplecache"),
+            ServerRequestInterface::class   => $container->lazyGet("app.request"),
             LoggerInterface::class          => $container->lazyGet("app.log"),
         ]);
     }

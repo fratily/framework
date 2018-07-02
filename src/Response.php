@@ -25,6 +25,9 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 class Response{
 
+    use Traits\EventTrait;
+    use Traits\PerformanceTrait;
+
     /**
      * @var ServerRequestInterface
      */
@@ -41,24 +44,14 @@ class Response{
     protected $emitter;
 
     /**
-     * @var EventManagerInterface
-     */
-    protected $eventMng;
-
-    /**
-     * @var ResponseInterface
-     */
-    private $response;
-
-    /**
      * @var bool
      */
-    private $send;
+    private $send   = false;
 
     /**
      * @var \Throwable|null
      */
-    private $error;
+    private $error  = null;
 
     /**
      * Constructor
@@ -70,15 +63,11 @@ class Response{
     public function __construct(
         ServerRequestInterface $request,
         RequestHandlerInterface $handler,
-        EmitterInterface $emmiter,
-        EventManagerInterface $eventMng
+        EmitterInterface $emmiter
     ){
         $this->request  = $request;
         $this->handler  = $handler;
         $this->emitter  = $emmiter;
-        $this->eventMng = $eventMng;
-        $this->send     = false;
-        $this->error    = null;
     }
 
     /**
@@ -93,20 +82,30 @@ class Response{
     /**
      * リクエストハンドラを実行し生成されたレスポンスを送信する
      *
-     * @
+     * @return  bool
      */
     public function send(){
         if(!$this->send){
+            $this->startTimeline("response.handle");
+
             $response   = $this->handle();
 
+            $this->endTimeline("response.handle");
+
             if($response !== null){
+                $this->startTimeline("response.emit");
+
                 $this->emit($response);
+
+                $this->endTimeline("response.emit");
             }
 
             $this->send = true;
+
+            $this->event(new Event("response.send.after"));
         }
 
-        return $this->error instanceof \Throwable;
+        return !($this->error instanceof \Throwable);
     }
 
     /**
@@ -123,20 +122,18 @@ class Response{
         ];
 
         try{
-            $params["start"]    = time();
+            $params["start"]    = microtime(true);
             $params["response"] = $this->handler->handle($this->request);
         }catch(\Throwable $e){
             $params["error"]    = $e;
             $this->error        = $e;
         }finally{
-            $params["finish"]   = time();
+            $params["finish"]   = microtime(true);
         }
 
-        $this->eventMng->trigger(new Event("response.handler.finish", $params));
+        $this->event(new Event("response.handle.after", $params));
 
-        $this->response = $params["response"];
-
-        return $this->response;
+        return $params["response"];
     }
 
     /**
@@ -154,16 +151,16 @@ class Response{
         ];
 
         try{
-            $params["start"]    = time();
+            $params["start"]    = microtime(true);
 
             $this->emitter->emit($response);
         }catch(\Throwable $e){
             $params["error"]    = $e;
             $this->error        = $e;
         }finally{
-            $params["finish"]   = time();
+            $params["finish"]   = microtime(true);
         }
 
-        $this->eventMng->trigger(new Event("response.emit.finish", $params));
+        $this->event(new Event("response.emit.after", $params));
     }
 }
