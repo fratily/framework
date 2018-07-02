@@ -459,7 +459,7 @@ class Application{
             ->router($request->getUri()->getHost(), $request->getMethod())
         ;
 
-        $this->endTimeline("router.generate");
+        $this->endTimeline("router.create");
 
         // Routing
         $this->startTimeline("router.routing");
