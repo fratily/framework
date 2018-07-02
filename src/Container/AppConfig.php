@@ -49,7 +49,13 @@ class AppConfig extends ContainerConfig{
         $container
             ->set("app", $container->lazyNew(Application::class))
             ->set("app.routes", $container->lazyNew(RouteCollector::class))
-            ->set("app.factory.request", $container->lazyNew(ServerRequestFactory::class))
+            ->set("app.request", $container->lazyCallable(
+                [
+                    $container->lazyNew(ServerRequestFactory::class),
+                    "createServerRequestFromArray"
+                ],
+                $_SERVER
+            ))
             ->set("app.factory.response", $container->lazyNew(ResponseFactory::class))
             ->set("app.response.emitter", $container->lazyNew(Emitter::class))
             ->set("app.eventManager", $container->lazyNew(EventManager::class))

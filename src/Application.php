@@ -429,18 +429,10 @@ class Application{
     /**
      * レスポンスを生成する
      *
-     * @param   ServerRequestInterface|null $request
-     *
      * @return  Response
      */
-    public function generateResponse(ServerRequestInterface $request = null){
-        if($request === null){
-            $request    = $this->container->get("app.factory.request")
-                ->createServerRequestFromArray($_SERVER)    // ここどうにかしたい
-            ;
-        }
-
-        $request    = $request
+    public function generateResponse(){
+        $request    = $this->container->get("app.request")
             ->withAttribute("app.debug", $this->debug)
         ;
 
