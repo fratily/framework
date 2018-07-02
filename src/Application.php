@@ -85,7 +85,7 @@ class Application{
         $container  = $containerFactory->createWithConfig($containerConfig, true);
         $end        = microtime(true);
 
-        $timeline["container.factory"]  = [$start, $end];
+        $timeline["container.create"]  = [$start, $end];
 
         // Create Application
         $start  = microtime(true);
