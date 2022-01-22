@@ -8,7 +8,16 @@
         }
     ],
     "license": "MIT",
-    "scripts": {},
+    "scripts": {
+        "test": [ "@phpunit:unit" ],
+        "format": [ "@phpcs" ],
+        "lint": [ "@phpstan" ],
+
+        "phpunit:unit": "phpunit --testsuite unit",
+        "phpcs": "phpcs",
+        "phpcbf": "phpcbf",
+        "phpstan": "phpstan analyze"
+    },
     "require": {
         "php": "^8.0"
     },
