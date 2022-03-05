@@ -6,7 +6,7 @@ namespace Fratily\Framework\KernelEvent;
 
 use Psr\Http\Message\ServerRequestInterface;
 
-class KernelEvent
+abstract class KernelEvent
 {
     /**
      * @param ServerRequestInterface $request
