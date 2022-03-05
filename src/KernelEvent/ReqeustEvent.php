@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fratily\Framework\KernelEvent;
 
+use Fratily\Framework\KernelEvent;
 use Psr\EventDispatcher\StoppableEventInterface;
 
 /**

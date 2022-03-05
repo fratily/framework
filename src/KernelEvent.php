@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fratily\Framework\KernelEvent;
+namespace Fratily\Framework;
 
 use Psr\Http\Message\ServerRequestInterface;
 
