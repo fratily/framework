@@ -14,6 +14,15 @@ class ResponseSender implements ResponseSenderInterface
     ];
 
     /**
+     * @param int|null $body_seek_length
+     *
+     * @phpstan-param positive-int|null $body_seek_length
+     */
+    public function __construct(protected int|null $body_seek_length = null)
+    {
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function send(ResponseInterface $response): void
@@ -61,12 +70,15 @@ class ResponseSender implements ResponseSenderInterface
             throw new LogicException();
         }
 
-        if ($body->isSeekable()) {
-            // NOTE: いらない気がする。
-            $body->rewind();
+        if (!$body->isSeekable() || $this->body_seek_length === null) {
+            echo (string)$body;
+            return;
         }
 
-        // NOTE: とても大きなbodyの時にちょっとずつ出力するようにしたほうが良い？
-        echo (string)$body;
+        $body->rewind();
+        while (!$body->eof()) {
+            echo $body->read($this->body_seek_length);
+            $body->seek($this->body_seek_length, SEEK_CUR);
+        }
     }
 }
