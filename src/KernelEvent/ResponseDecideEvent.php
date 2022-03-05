@@ -14,7 +14,7 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class ResponseDecideEvent extends KernelEvent implements StoppableEventInterface
 {
-    use StoppableEventTrait;
+    use StoppableTrait;
 
     /**
      * @param ServerRequestInterface $request

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Fratily\Framework\KernelEvent;
 
-use LogicException;
-
-trait StoppableEventTrait
+trait StoppableTrait
 {
     private bool $propagation_stopped = false;
 

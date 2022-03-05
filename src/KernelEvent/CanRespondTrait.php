@@ -6,7 +6,7 @@ namespace Fratily\Framework\KernelEvent;
 
 use Psr\Http\Message\ResponseInterface;
 
-trait CanRespondEventTrait
+trait CanRespondTrait
 {
     private ResponseInterface|null $response = null;
 

@@ -12,6 +12,6 @@ use Psr\EventDispatcher\StoppableEventInterface;
  */
 class RequestEvent extends KernelEvent implements StoppableEventInterface
 {
-    use StoppableEventTrait;
-    use CanRespondEventTrait;
+    use StoppableTrait;
+    use CanRespondTrait;
 }
