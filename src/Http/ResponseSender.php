@@ -38,7 +38,8 @@ class ResponseSender implements ResponseSenderInterface
         }
 
         header(
-            sprintf('HTTP/%s %s %s',
+            sprintf(
+                'HTTP/%s %s %s',
                 $response->getProtocolVersion(),
                 $response->getStatusCode(),
                 $response->getReasonPhrase() !== ''
