@@ -9,6 +9,10 @@ use Psr\Http\Message\ResponseInterface;
 
 class ResponseSender implements ResponseSenderInterface
 {
+    public const STATUS_PHRASES = ResponseSenderInterface::STATUS_PHRASES + [
+        418 => 'I\'m a teapot' // It's a famous joke and should be available.
+    ];
+
     /**
      * {@inheritDoc}
      */
@@ -28,11 +32,11 @@ class ResponseSender implements ResponseSenderInterface
             sprintf('HTTP/%s %s %s',
                 $response->getProtocolVersion(),
                 $response->getStatusCode(),
-                // TODO: 空文字の時の対応
-                $response->getReasonPhrase()
+                $response->getReasonPhrase() !== ''
+                    ? $response->getReasonPhrase()
+                    : static::STATUS_PHRASES[$response->getStatusCode()] ?? 'unknown status code'
             ),
             true,
-            // NOTE: この指定が必要なのか調べる
             $response->getStatusCode()
         );
 
