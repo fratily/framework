@@ -8,4 +8,7 @@ class RequestAttribute
 {
     public const ROUTING_MATCH_ROUTE_PARAMS = 'fratily.routing.match.params';
     public const ROUTING_MATCH_ROUTE_CALLBACK = 'fratily.routing.match.callback';
+
+    public const CONTROLLER_CALLBACK = 'fratily.controller.callback';
+    public const CONTROLLER_ARGS = 'fratily.controller.args';
 }

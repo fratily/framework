@@ -15,7 +15,7 @@ interface RouterInterface
      * @param UriInterface $uri
      * @return array|null Route information. Returns null if the route not found.
      *
-     * @phpstan-return array{action:callable,params:array<string,mixed>}
+     * @phpstan-return array{controller:callable,params:array<string,mixed>}
      */
     public function match(string $method, UriInterface $uri): array|null;
 }
