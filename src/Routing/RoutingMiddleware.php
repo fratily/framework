@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fratily\Framework\Routing;
 
-use Fratily\Framework\Http\NotFoundException;
+use Fratily\Framework\Http\Exception\NotFoundException;
 use Fratily\Framework\Http\RequestAttribute;
 use Fratily\Framework\Routing\RouterInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -25,16 +25,18 @@ class RoutingMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $controller = $this->router->match($request->getMethod(), $request->getUri());
+        $match = $this->router->match($request->getMethod(), $request->getUri());
 
-        if ($controller === null) {
+        if ($match === null) {
             if ($this->not_found_mode === self::NOT_FOUND_MODE_EXCEPTION) {
                 throw new NotFoundException('todo: write message');
             }
+        } else {
+            $request = $request
+                ->withAttribute(RequestAttribute::ROUTING_MATCH_ROUTE_CALLBACK, $match['action'])
+                ->withAttribute(RequestAttribute::ROUTING_MATCH_ROUTE_PARAMS, $match['params']);
         }
 
-        return $handler->handle(
-            $request->withAttribute(RequestAttribute::CONTROLLER_CALLBACK, $controller)
-        );
+        return $handler->handle($request);
     }
 }

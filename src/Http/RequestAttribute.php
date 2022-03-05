@@ -6,5 +6,6 @@ namespace Fratily\Framework\Http;
 
 class RequestAttribute
 {
-    public const CONTROLLER_CALLBACK = 'fratily.routing.controller';
+    public const ROUTING_MATCH_ROUTE_PARAMS = 'fratily.routing.match.params';
+    public const ROUTING_MATCH_ROUTE_CALLBACK = 'fratily.routing.match.callback';
 }

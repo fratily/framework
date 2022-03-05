@@ -9,11 +9,13 @@ use Psr\Http\Message\UriInterface;
 interface RouterInterface
 {
     /**
-     * Returns a callback of the action that matches the request.
+     * Returns route information that matches the request.
      *
      * @param string $method
      * @param UriInterface $uri
-     * @return callable|null Returns an action callback. Returns null if there is no matching route.
+     * @return array|null Route information. Returns null if the route not found.
+     *
+     * @phpstan-return array{action:callable,params:array<string,mixed>}
      */
-    public function match(string $method, UriInterface $uri): ?callable;
+    public function match(string $method, UriInterface $uri): array|null;
 }
