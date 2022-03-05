@@ -6,6 +6,7 @@ namespace Fratily\Framework;
 
 use Fratily\Framework\Http\ResponseSenderInterface;
 use Fratily\Framework\KernelEvent\RequestEvent;
+use Fratily\Framework\KernelEvent\ResponseDecideEvent;
 use Fratily\Framework\KernelEvent\TerminateEvent;
 use InvalidArgumentException;
 use LogicException;
@@ -71,6 +72,10 @@ class Kernel
         } else {
             $response = $this->handleMiddleware($request);
         }
+
+        $response_decide_event = new ResponseDecideEvent($request, $response);
+        $this->dispatchEvent($response_decide_event);
+        $response = $response_decide_event->getResponse();
 
         $this->response_sender->send($response);
 
