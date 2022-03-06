@@ -12,7 +12,8 @@ interface ResponseSenderInterface
      * @var string[] Status code reason phrase map.
      * @phpstan-var array<int<100,599>,non-empty-string>
      *
-     * @link https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml HTTP Status Code Registry (version 19)
+     * @link https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
+     *       HTTP Status Code Registry (version 19)
      */
     public const STATUS_PHRASES = [
         100 => 'Continue',
