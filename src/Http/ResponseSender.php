@@ -134,8 +134,7 @@ class ResponseSender implements ResponseSenderInterface
         $body = $response->getBody();
 
         if (!$body->isReadable()) {
-            // TODO: 例外をちゃんとしたものにする
-            throw new LogicException();
+            throw new LogicException('todo: message');
         }
 
         if (!$body->isSeekable() || $this->body_seek_length === null) {
