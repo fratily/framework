@@ -34,6 +34,7 @@ class RoutingMiddleware implements MiddlewareInterface
         } else {
             $request = $request
                 ->withAttribute(RequestAttribute::CONTROLLER_CALLBACK, $match['controller'])
+                ->withAttribute(RequestAttribute::CONTROLLER_ARGS, [])
                 ->withAttribute(RequestAttribute::ROUTING_MATCH_ROUTE_PARAMS, $match['params']);
         }
 
